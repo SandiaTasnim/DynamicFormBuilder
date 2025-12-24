@@ -1,0 +1,491 @@
+﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
+using DynamicFormBuilder.Services;
+using DynamicFormBuilder.Services.Interfaces;
+using DynamicFormBuilder.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
+using System.Drawing;
+using System.Numerics;
+using X.PagedList;
+using X.PagedList.Extensions;
+
+public class CustomerController : Controller
+{
+    private readonly ICustomerService _customerService;
+
+    public CustomerController(ICustomerService customerService)
+    {
+        _customerService = customerService;
+    }
+    // GET: Customers/Index
+
+    //[HttpGet("Index")] // <-- Only one route per action
+
+    //public IActionResult Index(string name, string phone, string division)
+    //{
+
+    //    var customerData = _customerService.GetAllSearchCustomer(name, phone);
+    //    // Get all customers
+    //    var customers = _customerService.GetAllCustomers();
+
+
+    //    var divisions = _customerService.GetAllDivisions() ?? new List<Division>();
+    //    ViewBag.DivisionList = divisions.Select(d => new SelectListItem
+    //    {
+    //        Value = d.DivisionID.ToString(),
+    //        Text = d.DivisionName
+    //    }).ToList();
+
+    //    // Keep search values
+    //    ViewBag.SearchName = name;
+    //    ViewBag.SearchPhone = phone;
+
+
+
+    //    return View(customerData);
+    //}
+    //[HttpGet("Index")] // <-- Only one route per action
+    //public IActionResult Index(string name, string phone, int page = 1)
+    //{
+    //    int pageSize = 10;  // ADD THIS - records per page
+
+    //    // Get all customers
+    //    var customers = _customerService.GetAllCustomers()
+    //             ?? Enumerable.Empty<CustomerViewModel>();
+
+    //    // APPLY SEARCH FILTERS FIRST (before pagination)
+    //    if (!string.IsNullOrWhiteSpace(name))
+    //        customers = customers.Where(c =>
+    //            (c.FirstName != null && c.FirstName.Contains(name)) ||
+    //            (c.LastName != null && c.LastName.Contains(name)));
+
+    //    if (!string.IsNullOrWhiteSpace(phone))
+    //        customers = customers.Where(c => c.Phone != null && c.Phone.Contains(phone));
+
+    //    // CALCULATE TOTALS AFTER FILTERING
+    //    int totalRecords = customers.Count();
+    //    int totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+
+    //    // APPLY PAGINATION
+    //    var customersPaged = customers.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+
+
+    //    // Keep search values
+    //    ViewBag.SearchName = name;
+    //    ViewBag.SearchPhone = phone;
+    //    ViewBag.CurrentPage = page;        
+    //    ViewBag.TotalPages = totalPages;  
+    //    ViewBag.TotalRecords = totalRecords; 
+    //    return View(customersPaged);  // CHANGED from customerData to customersPaged
+    //}
+
+
+    // using X.PagedList;
+    [HttpGet]
+    public IActionResult Index(string name, string phone, int page = 1,int pageSize=10)
+    {
+        if (pageSize <= 0) pageSize = 10;
+        ViewBag.PageSize = pageSize;
+        ViewBag.CurrentPage = page;
+        ViewBag.SearchName = name;
+        ViewBag.SearchPhone = phone;
+
+        var data = _customerService.GetAllSearchCustomer(name,phone);
+
+        IPagedList<CustomerViewModel> pagedList = data.ToPagedList(page, pageSize);
+
+
+
+        
+        
+        
+
+        return View(pagedList);
+    }
+
+
+
+    [HttpGet("Create")] 
+
+    public IActionResult Create()
+    {
+        ViewBag.DivisionsList = _customerService.GetAllDivisions()
+            .Select(d => new SelectListItem { Value = d.DivisionID.ToString(), Text = d.DivisionName })
+            .ToList();
+
+        ViewBag.DistrictsList = new List<SelectListItem>(); 
+        return View();
+    }
+
+    [HttpPost("Create")]
+    [ValidateAntiForgeryToken]
+    public IActionResult Create(Customer customer)
+    {
+        if (_customerService.isExistNID(customer.NID))
+        {
+            ModelState.AddModelError(string.Empty, "NID  already exists!");
+
+            // Convert to SelectListItem format
+            ViewBag.DivisionsList = _customerService.GetAllDivisions()
+                .Select(d => new SelectListItem { Value = d.DivisionID.ToString(), Text = d.DivisionName })
+                .ToList();
+
+            ViewBag.DistrictsList = _customerService.GetAllDistricts()
+                .Select(d => new SelectListItem { Value = d.DistrictID.ToString(), Text = d.DistrictName })
+                .ToList();
+
+            return View(customer);
+        }
+        if (_customerService.isExistPhone(customer.Phone))
+        {
+            ModelState.AddModelError(string.Empty, "Phone already exists!");
+
+            // Convert to SelectListItem format
+            ViewBag.DivisionsList = _customerService.GetAllDivisions()
+                .Select(d => new SelectListItem { Value = d.DivisionID.ToString(), Text = d.DivisionName })
+                .ToList();
+
+            ViewBag.DistrictsList = _customerService.GetAllDistricts()
+                .Select(d => new SelectListItem { Value = d.DistrictID.ToString(), Text = d.DistrictName })
+                .ToList();
+
+            return View(customer);
+        }
+
+        if (!ModelState.IsValid)
+        {
+            
+            ViewBag.DivisionsList = _customerService.GetAllDivisions()
+                .Select(d => new SelectListItem { Value = d.DivisionID.ToString(), Text = d.DivisionName })
+                .ToList();
+
+            ViewBag.DistrictsList = _customerService.GetAllDistricts()
+                .Select(d => new SelectListItem { Value = d.DistrictID.ToString(), Text = d.DistrictName })
+                .ToList();
+
+            return View(customer);
+        }
+
+        try
+        {
+            _customerService.AddCustomer(customer);
+            return RedirectToAction("Index");
+        }
+        catch
+        {
+            ModelState.AddModelError(string.Empty, "An error occurred while creating the customer.");
+
+            
+            ViewBag.DivisionsList = _customerService.GetAllDivisions()
+                .Select(d => new SelectListItem { Value = d.DivisionID.ToString(), Text = d.DivisionName })
+                .ToList();
+
+            ViewBag.DistrictsList = _customerService.GetAllDistricts()
+                .Select(d => new SelectListItem { Value = d.DistrictID.ToString(), Text = d.DistrictName })
+                .ToList();
+
+            return View(customer);
+        }
+    }
+
+   
+
+    public IActionResult Details(int id)
+    {
+        var customer = _customerService.GetCustomerById(id);
+        if (customer == null) return NotFound();
+
+        
+        ViewBag.DivisionName = customer.DivisionID == null
+            ? "N/A"
+            : _customerService.GetDivisionName(customer.DivisionID.Value);
+
+        ViewBag.DistrictName = customer.DistrictID == null
+            ? "N/A"
+            : _customerService.GetDistrictName(customer.DistrictID.Value);
+
+        return View(customer);
+    }
+
+    
+    [HttpGet("Edit")]
+    public IActionResult Edit(int id)
+    {
+
+        var customer = _customerService.GetCustomerById(id);
+        if (customer == null) return NotFound();
+
+        
+        // Populate division select list (selected = customer's division)
+
+        ViewBag.DivisionsList = new SelectList(
+            _customerService.GetAllDivisions(),
+            "DivisionID",
+            "DivisionName",
+            customer.DivisionID);
+
+        // Populate district select list for the selected division (selected = customer's district)
+        ViewBag.DistrictsList = new SelectList(
+            _customerService.GetDistrictsByDivision(customer.DivisionID),
+            "DistrictID",
+            "DistrictName",
+            customer.DistrictID);
+
+        
+        return View("Edit", customer);
+    }
+
+
+    [HttpPost("Edit")]
+    [ValidateAntiForgeryToken]
+    public IActionResult Edit(Customer model)
+    {
+        if (_customerService.isExistNID(model.NID))
+        {
+            ModelState.AddModelError(string.Empty, "NID already exists!");
+            
+
+        }
+        if (_customerService.isExistPhone(model.Phone))
+        {
+            ModelState.AddModelError(string.Empty, "Phone already exists!");
+            
+
+        }
+        if (!ModelState.IsValid)
+        {
+
+            ViewBag.DivisionsList = new SelectList(
+                _customerService.GetAllDivisions(),
+                "DivisionID",
+                "DivisionName",
+                model.DivisionID);
+
+            ViewBag.DistrictsList = new SelectList(
+                _customerService.GetDistrictsByDivision(model.DivisionID),
+                "DistrictID",
+                "DistrictName",
+                model.DistrictID);
+
+
+            
+        }
+        _customerService.UpdateCustomer(model);
+
+
+        return RedirectToAction("Index");
+    }
+
+
+
+    [HttpGet("Delete")]
+    public IActionResult Delete(int id)
+    {
+        var customer = _customerService.GetCustomerById(id);
+        if (customer == null) return NotFound();
+
+        // Return the view named "Delete" and pass the customer model
+        return View("Delete", customer);
+    }
+
+    // POST: /Customer/Delete
+    [HttpPost("Delete")]
+    [ValidateAntiForgeryToken]
+    public IActionResult Delete(Customer model)
+    {
+        var customer = _customerService.GetCustomerById(model.CustomerID);
+        if (customer == null) return NotFound();
+
+        // Call service to delete
+        _customerService.DeleteCustomer(customer.CustomerID);
+
+        // Redirect to Index after deletion
+        return RedirectToAction("Index");
+    }
+
+
+
+
+
+
+
+    [HttpPost]
+    public IActionResult UpdateBalance(int id, decimal newBalance)
+    {
+        var customer = _customerService.GetCustomerById(id);
+        if (customer == null)
+        {
+            return NotFound();
+        }
+
+        customer.Balance = newBalance;
+        _customerService.UpdateCustomer(customer);
+
+        return RedirectToAction("Details", new { id });
+    }
+
+
+    // GET: Customer/GetDistricts/1
+    [HttpGet]
+    public JsonResult GetDistricts(int divisionId)
+    {
+        var districts = _customerService.GetAllDistricts()
+                        .Where(d => d.DivisionID == divisionId)
+                        .Select(d => new { d.DistrictID, d.DistrictName })
+                        .ToList();
+
+        return Json(districts);
+    }
+
+
+    public IActionResult Excel_Download(string name, string phone)
+    {
+
+        //================================FOR EXCEL EXPORT REPORT================================
+        var sFileName = "Customer Details" + "_" + DateTime.Now.ToString("dd-MM-yyyy") + ".xlsx";
+
+        using (var workbook = new XLWorkbook())
+        {
+            //===FOR Login History EXCEL EXPORT REPORT===
+
+            var data = _customerService.GetAllSearchCustomer(name, phone);
+
+
+            var ws = workbook.Worksheets.Add("Report");
+            ws.RowHeight = 20;
+
+            var range = ws.Range("A1:K1");
+            range.Style.Border.TopBorder = XLBorderStyleValues.Thin;
+            range.Style.Border.LeftBorder = XLBorderStyleValues.Thin;
+            range.Style.Border.RightBorder = XLBorderStyleValues.Thin;
+            range.Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+
+            range.Style.Border.TopBorderColor = XLColor.Black;
+            range.Style.Border.LeftBorderColor = XLColor.Black;
+            range.Style.Border.RightBorderColor = XLColor.Black;
+            range.Style.Border.BottomBorderColor = XLColor.Black;
+
+
+            ws.Row(1).Style.Fill.PatternType = XLFillPatternValues.Solid;
+            ws.Row(1).Style.Fill.BackgroundColor = XLColor.FromArgb(200, 200, 198);
+            ws.Row(1).Height = 20;
+            ws.Row(1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            ws.Row(1).Style.Font.Bold = true;
+            ws.Row(1).Style.Font.FontSize = 12;
+
+
+            if (data != null)
+            {
+                var headerColumn = 1;
+                ws.Cell(1, headerColumn++).Value = "Full Name";
+                ws.Cell(1, headerColumn++).Value = "DOB";
+                ws.Cell(1, headerColumn++).Value = "Profession";
+                ws.Cell(1, headerColumn++).Value = "Phone";
+                ws.Cell(1, headerColumn++).Value = "District";
+                ws.Cell(1, headerColumn++).Value = "Division";
+                ws.Cell(1, headerColumn++).Value = "Balance";
+                ws.Cell(1, headerColumn++).Value = "Email";
+                ws.Cell(1, headerColumn++).Value = "NID";
+
+            }
+
+            if (data.Any())
+            {
+                int rowId = 2;
+
+                foreach (var singleData in data)
+                {
+                    var DataColumn = 1;
+                    ws.Cell(rowId, DataColumn++).Value = singleData.FullName;
+                    ws.Cell(rowId, DataColumn++).Value = singleData.DOB?.ToString("yyyy-MM-dd");
+                    ws.Cell(rowId, DataColumn++).Value = singleData.Profession;
+                    ws.Cell(rowId, DataColumn++).Value = singleData.Phone;
+                    ws.Cell(rowId, DataColumn++).Value = singleData.DistrictName;
+                    ws.Cell(rowId, DataColumn++).Value = singleData.DivisionName;
+                    ws.Cell(rowId, DataColumn++).Value = singleData.Balance;
+                    ws.Cell(rowId, DataColumn++).Value = singleData.Email;
+                    ws.Cell(rowId, DataColumn++).Value = singleData.NID;
+
+                    rowId++;
+                }
+            }
+
+
+            for (int i = 1; i <= 11; i++)
+            {
+                ws.Column(i).AdjustToContents();
+                ws.Column(i).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                ws.Column(i).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+            }
+
+            using (var stream = new MemoryStream())
+            {
+                workbook.SaveAs(stream);
+                var content = stream.ToArray();
+                return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
+            }
+        }
+    }
+
+    //public IActionResult Excel_Download(string name, string phone, string division)
+    //{
+    //    var sFileName = "MemberWise_Details_Payment_" + DateTime.Now.ToString("dd-MM-yyyy") + ".xlsx";
+    //    var data = _customerService.GetAllSearchCustomer(name, phone, division);
+
+    //    using (var workbook = new XLWorkbook())
+    //    {
+    //        var ws = workbook.Worksheets.Add("Report");
+
+    //        // Header
+    //        ws.Cell(1, 1).Value = "Full Name";
+    //        ws.Cell(1, 2).Value = "DOB";
+    //        ws.Cell(1, 3).Value = "Profession";
+    //        ws.Cell(1, 4).Value = "Phone";
+    //        ws.Cell(1, 5).Value = "District";
+    //        ws.Cell(1, 6).Value = "Division";
+    //        ws.Cell(1, 7).Value = "Balance";
+    //        ws.Cell(1, 8).Value = "Email";
+    //        ws.Cell(1, 9).Value = "NID";
+
+    //        // Make header bold
+    //        ws.Row(1).Style.Font.Bold = true;
+
+    //        int rowId = 2;
+    //        foreach (var singleData in data)
+    //        {
+    //            ws.Cell(rowId, 1).Value = singleData.FullName;
+    //            ws.Cell(rowId, 2).Value = singleData.DOB?.ToString("yyyy-MM-dd");
+    //            ws.Cell(rowId, 3).Value = singleData.Profession;
+    //            ws.Cell(rowId, 4).Value = singleData.Phone;
+    //            ws.Cell(rowId, 5).Value = singleData.DistrictName;
+    //            ws.Cell(rowId, 6).Value = singleData.DivisionName;
+    //            ws.Cell(rowId, 7).Value = singleData.Balance;
+    //            ws.Cell(rowId, 8).Value = singleData.Email;
+    //            ws.Cell(rowId, 9).Value = singleData.NID;
+    //            rowId++;
+    //        }
+
+    //        ws.Columns().AdjustToContents();
+
+    //        using (var stream = new MemoryStream())
+    //        {
+    //            workbook.SaveAs(stream);
+    //            var content = stream.ToArray();
+    //            return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
+    //        }
+    //    }
+
+    //}
+
+}
+
+
+
+
+
+

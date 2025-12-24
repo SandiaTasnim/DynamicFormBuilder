@@ -1,0 +1,140 @@
+﻿@model Customer
+
+@{
+    ViewData["Title"] = "Edit Customer";
+}
+
+<h2>Edit Customer</h2>
+<hr />
+
+<form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+
+    <!-- Hidden ID -->
+    <input type="hidden" asp-for="CustomerID" />
+
+    <div class="row">
+
+        <!-- First Name -->
+        <div class="col-md-6 mb-3">
+            <label asp-for="FirstName" class="form-label"></label>
+            <input asp-for="FirstName" class="form-control" />
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+        </div>
+
+        <!-- Last Name -->
+        <div class="col-md-6 mb-3">
+            <label asp-for="LastName" class="form-label"></label>
+            <input asp-for="LastName" class="form-control" />
+            <span asp-validation-for="LastName" class="text-danger"></span>
+        </div>
+
+        <!-- Email -->
+        <div class="col-md-6 mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <!-- NID -->
+        <div class="col-md-6 mb-3">
+            <label asp-for="NID" class="form-label"></label>
+            <input asp-for="NID" class="form-control" />
+            <span asp-validation-for="NID" class="text-danger"></span>
+        </div>
+
+        <!-- Phone -->
+        <div class="col-md-6 mb-3">
+            <label asp-for="Phone" class="form-label"></label>
+            <input asp-for="Phone" class="form-control" />
+            <span asp-validation-for="Phone" class="text-danger"></span>
+        </div>
+
+        <!-- Profession -->
+        <div class="col-md-6 mb-3">
+            <label asp-for="Profession" class="form-label"></label>
+            <input asp-for="Profession" class="form-control" />
+            <span asp-validation-for="Profession" class="text-danger"></span>
+        </div>
+
+        <!-- DOB -->
+        <div class="col-md-6 mb-3">
+            <label asp-for="DOB" class="form-label"></label>
+            <input asp-for="DOB" type="date" class="form-control" />
+            <span asp-validation-for="DOB" class="text-danger"></span>
+        </div>
+
+        <!-- Division Dropdown -->
+        <div class="col-md-6 mb-3">
+            <label asp-for="DivisionID" class="form-label">Division</label>
+            <select asp-for="DivisionID" class="form-select" id="DivisionID"
+                    asp-items="ViewBag.DivisionsList">
+                <option value="">-- Select Division --</option>
+            </select>
+            <span asp-validation-for="DivisionID" class="text-danger"></span>
+        </div>
+
+        <!-- District Dropdown -->
+        <div class="col-md-6 mb-3">
+            <label asp-for="DistrictID" class="form-label">District</label>
+            <select asp-for="DistrictID" asp-items="ViewBag.DistrictsList" class="form-select" id="DistrictID">
+                <option value="">-- Select District --</option>
+            </select>
+            <span asp-validation-for="DistrictID" class="text-danger"></span>
+        </div>
+
+        <!-- Balance -->
+        <div class="col-md-6 mb-3">
+            <label asp-for="Balance" class="form-label"></label>
+            <input asp-for="Balance" class="form-control" />
+            <span asp-validation-for="Balance" class="text-danger"></span>
+        </div>
+
+    </div>
+
+    <button type="submit" class="btn btn-primary">Update</button>
+    <a asp-action="Index" class="btn btn-secondary">Back</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function () {
+
+            $('#DivisionID').change(function () {
+                var divisionId = $(this).val();
+                var districtSelect = $('#DistrictID');
+
+                districtSelect.empty();
+                districtSelect.append('<option value="">-- Select District --</option>');
+
+                if (divisionId) {
+                    $.getJSON('@Url.Action("GetDistricts", "Customer")',
+                        { divisionId: divisionId }, function (data) {
+
+                            $.each(data, function (i, district) {
+                                districtSelect.append('<option value="' +
+                                    district.districtID + '">' +
+                                    district.districtName + '</option>');
+                            });
+
+                            // Auto-select existing district after load
+                            var selectedDistrict = '@Model.DistrictID';
+                            if (selectedDistrict) {
+                                districtSelect.val(selectedDistrict);
+                            }
+                        });
+                }
+            });
+
+            // Trigger change to load districts on page load
+            var selectedDivision = $('#DivisionID').val();
+            if (selectedDivision) {
+                $('#DivisionID').trigger('change');
+            }
+        });
+    </script>
+}

@@ -1,0 +1,23 @@
+﻿@model Customer
+
+@{
+    ViewData["Title"] = "Delete Customer";
+}
+
+<h1 class="mb-4">Delete Customer</h1>
+
+<div class="alert alert-warning">
+    Are you sure you want to delete the customer
+    <strong>@Model.FirstName @Model.LastName</strong>?
+</div>
+
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+
+    <!-- Hidden input to pass CustomerID to POST action -->
+    <input type="hidden" asp-for="CustomerID" />
+
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
