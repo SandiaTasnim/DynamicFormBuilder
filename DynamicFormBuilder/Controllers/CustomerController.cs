@@ -1,20 +1,27 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Spreadsheet;
 using DynamicFormBuilder.Services;
 using DynamicFormBuilder.Services.Interfaces;
 using DynamicFormBuilder.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.IdentityModel.Tokens;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
+using System.Data;
 using System.Drawing;
 using System.Numerics;
 using X.PagedList;
 using X.PagedList.Extensions;
+using System.Data.OleDb;
 
 public class CustomerController : Controller
 {
     private readonly ICustomerService _customerService;
+    private readonly ApplicationDbContext _db;
+
+    public object GlobalValidationMessage { get; private set; }
 
     public CustomerController(ICustomerService customerService)
     {
@@ -85,27 +92,40 @@ public class CustomerController : Controller
 
 
     // using X.PagedList;
-    [HttpGet]
-    public IActionResult Index(string name, string phone, int page = 1,int pageSize=10)
+    [HttpGet("Index")]
+    public IActionResult Index(string name, string phone, int? page, int pageSize = 10)
     {
         if (pageSize <= 0) pageSize = 10;
-        ViewBag.PageSize = pageSize;
-        ViewBag.CurrentPage = page;
+
+    
         ViewBag.SearchName = name;
         ViewBag.SearchPhone = phone;
 
-        var data = _customerService.GetAllSearchCustomer(name,phone);
-
-        IPagedList<CustomerViewModel> pagedList = data.ToPagedList(page, pageSize);
-
-
+        // 1️⃣ Get entity data (NULL SAFE)
+        var customers = _customerService.GetAllSearchCustomer(name, phone);
+        // 2️⃣ APPLY SEARCH (optional but recommended)
+        
+        var vm = customers.Select(c => new CustomerViewModel
+        {
+            CustomerID = c.CustomerID,
+            FirstName = c.FirstName,
+            LastName = c.LastName,
+            FullName = c.FullName,
+            Phone = c.Phone,
+            Email = c.Email,
+            Profession = c.Profession,
+            Balance = c.Balance,
+            DivisionName = c.DivisionName,
+            DistrictName = c.DistrictName,
+            NID = c.NID
+        });
 
         
-        
-        
 
-        return View(pagedList);
+        return View(vm.ToPagedList(page ?? 1, pageSize));
     }
+
+
 
 
 
@@ -192,26 +212,36 @@ public class CustomerController : Controller
         }
     }
 
-   
+
+
+    //public IActionResult Details(int id)
+    //{
+    //    var customer = _customerService.GetCustomerById(id);
+    //    if (customer == null) return NotFound();
+
+
+    //    ViewBag.DivisionName = customer.DivisionID == null
+    //        ? "N/A"
+    //        : _customerService.GetDivisionName(customer.DivisionID.Value);
+
+    //    ViewBag.DistrictName = customer.DistrictID == null
+    //        ? "N/A"
+    //        : _customerService.GetDistrictName(customer.DistrictID.Value);
+
+    //    return View(customer);
+    //}
+
 
     public IActionResult Details(int id)
     {
-        var customer = _customerService.GetCustomerById(id);
-        if (customer == null) return NotFound();
+        var customer = _customerService.GetCustomerDetailsById(id);
 
-        
-        ViewBag.DivisionName = customer.DivisionID == null
-            ? "N/A"
-            : _customerService.GetDivisionName(customer.DivisionID.Value);
-
-        ViewBag.DistrictName = customer.DistrictID == null
-            ? "N/A"
-            : _customerService.GetDistrictName(customer.DistrictID.Value);
-
-        return View(customer);
+        if (customer == null)
+            return NotFound();
+        return View("Details", customer);
     }
 
-    
+
     [HttpGet("Edit")]
     public IActionResult Edit(int id)
     {
@@ -293,6 +323,8 @@ public class CustomerController : Controller
     }
 
     // POST: /Customer/Delete
+
+
     [HttpPost("Delete")]
     [ValidateAntiForgeryToken]
     public IActionResult Delete(Customer model)
@@ -342,7 +374,7 @@ public class CustomerController : Controller
     }
 
 
-    public IActionResult Excel_Download(string name, string phone)
+    public IActionResult Excel_Download()
     {
 
         //================================FOR EXCEL EXPORT REPORT================================
@@ -352,7 +384,9 @@ public class CustomerController : Controller
         {
             //===FOR Login History EXCEL EXPORT REPORT===
 
-            var data = _customerService.GetAllSearchCustomer(name, phone);
+            //var data = _customerService.GetAllSearchCustomer(name, phone);
+            var data = _customerService.GetAllCustomers();
+
 
 
             var ws = workbook.Worksheets.Add("Report");
@@ -430,7 +464,73 @@ public class CustomerController : Controller
                 return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
             }
         }
+
+               
     }
+
+    [HttpPost("ReadExcelFileAsync")]
+    public async Task<IActionResult> ReadExcelFileAsync(IFormFile file, string name,string phone)
+
+    {
+        if (file == null || file.Length == 0)
+            return Content("File Not Selected");
+
+        string fileExtension = Path.GetExtension(file.FileName);
+        if (fileExtension != ".xls" && fileExtension != ".xlsx")
+            return Content("File Not Selected");
+
+        var rootFolder = @"D:\Files";
+        var fileName = file.FileName;
+        var filePath = Path.Combine(rootFolder, fileName);
+        var fileLocation = new FileInfo(filePath);
+
+        using (var fileStream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(fileStream);
+        }
+
+        if (file.Length <= 0)
+            return BadRequest("File not found.");
+
+        using (ExcelPackage package = new ExcelPackage(fileLocation))
+        {
+            ExcelWorksheet workSheet = package.Workbook.Worksheets["Table1"];
+            int totalRows = workSheet.Dimension.Rows;
+            var DataList = new List<Customer>();
+
+
+            for (int i = 2; i <= totalRows; i++)
+            {
+                DataList.Add(new Customer
+                {
+                    FirstName = workSheet.Cells[i, 1].Text,
+                    LastName = workSheet.Cells[i, 2].Text,
+                    Phone = workSheet.Cells[i, 3].Text,
+                    Email = workSheet.Cells[i, 4].Text,
+                    Profession = workSheet.Cells[i, 5].Text,
+
+                    // Balance (string → decimal)
+                    Balance = decimal.TryParse(workSheet.Cells[i, 7].Text, out decimal balance)
+                        ? balance
+                        : 0,
+
+                    NID = workSheet.Cells[i, 8].Text,
+                    
+                });
+
+
+            }
+
+
+            _db.Customers.AddRange(DataList);
+            _db.SaveChanges();
+        }
+        return Ok();
+    }
+
+    
+
+
 
     //public IActionResult Excel_Download(string name, string phone, string division)
     //{
@@ -483,6 +583,321 @@ public class CustomerController : Controller
     //}
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

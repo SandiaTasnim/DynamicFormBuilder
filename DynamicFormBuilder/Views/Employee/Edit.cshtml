@@ -1,0 +1,63 @@
+﻿@model EmployeeModel
+
+@{
+    ViewData["Title"] = "Edit Employee";
+}
+
+<h2>Edit Employee</h2>
+
+@using (Html.BeginForm("Edit", "Employee", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <!-- Hidden ID -->
+    @Html.HiddenFor(model => model.Id)
+
+    <div class="form-group">
+        <label>Full Name</label>
+        @Html.TextBoxFor(model => model.FullName, new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.FullName)
+    </div>
+    <div class="form-group">
+        <label>Full Name</label>
+        @Html.TextBoxFor(model => model.EmployeeId, new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.EmployeeId)
+    </div>
+
+    <div class="form-group">
+        <label>Email</label>
+        @Html.TextBoxFor(model => model.Email, new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.Email)
+    </div>
+
+    <div class="form-group">
+        <label>Designation</label>
+        @Html.TextBoxFor(model => model.Designation, new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.Designation)
+    </div>
+
+    <div class="form-group">
+        <label>Date of Birth</label>
+        @Html.TextBoxFor(model => model.DOB, "{0:yyyy-MM-dd}",
+        new { @class = "form-control", type = "date" })
+    @Html.ValidationMessageFor(model => model.DOB)
+</div>
+
+<!-- ✅ STATUS DROPDOWN -->
+<div class="form-group">
+    <label>Status</label>
+    @Html.DropDownListFor(
+        model => model.IsActive,
+        Model.StatusList,
+        "-- Select Status --",
+        new { @class = "form-control" }
+        )
+    @Html.ValidationMessageFor(model => model.IsActive)
+</div>
+
+<br />
+
+<button type="submit" class="btn btn-primary">Update</button>
+<a href="@Url.Action("Index", "Employee")" class="btn btn-secondary">Cancel</a>
+}
+

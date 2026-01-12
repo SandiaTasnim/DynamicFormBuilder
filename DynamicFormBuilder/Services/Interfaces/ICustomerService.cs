@@ -10,6 +10,7 @@ namespace DynamicFormBuilder.Services.Interfaces
         IEnumerable<CustomerViewModel> GetAllSearchCustomer(string name, string phone);
 
         Customer GetCustomerById(int id);
+        CustomerViewModel GetCustomerDetailsById(int id);
         void AddCustomer(Customer customer);
         void UpdateCustomer(Customer customer);
         void DeleteCustomer(int id);

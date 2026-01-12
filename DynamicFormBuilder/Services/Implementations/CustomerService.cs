@@ -1,6 +1,9 @@
 ﻿using DynamicFormBuilder.Models;
 using DynamicFormBuilder.Services.Interfaces;
 using DynamicFormBuilder.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,27 +67,66 @@ namespace DynamicFormBuilder.Services
                     .ToList();
             }
 
-            
+
 
 
             return customers.ToList();
+           
         }
+
 
         public bool isExistNID(string NID)
         {
-            return _db.Customers.Any(m => m.NID == NID );
+            return _db.Customers.Any(m => m.NID == NID);
         }
-        public bool isExistPhone( string Phone)
+        public bool isExistPhone(string Phone)
         {
-            return _db.Customers.Any(m =>  m.Phone == Phone);
+            return _db.Customers.Any(m => m.Phone == Phone);
         }
-       
+
         // Get customer by ID
-        
+
         public Customer GetCustomerById(int id)
         {
-            return _db.Customers.FirstOrDefault(c => c.CustomerID == id);
+            return _db.Customers.Find(id);
         }
+
+        public CustomerViewModel GetCustomerDetailsById(int id)
+        {
+            var customer =
+        (from c in _db.Customers.Where(i => i.CustomerID == id)
+
+             // LEFT JOIN Division
+         join d in _db.Divisions
+             on c.DivisionID equals d.DivisionID into divJoin
+         from d in divJoin.DefaultIfEmpty()
+
+             // LEFT JOIN District (correct join!)
+         join dis in _db.Districts
+             on c.DistrictID equals dis.DistrictID into disJoin
+         from dis in disJoin.DefaultIfEmpty()
+
+         select new CustomerViewModel
+         {
+             CustomerID = c.CustomerID,
+             FullName = c.FirstName + " " + c.LastName,
+             DivisionName = d.DivisionName,
+             DistrictName = dis.DistrictName,
+             DOB = c.DOB,
+             DivisionID = c.DivisionID,
+             DistrictID = c.DistrictID,
+             Phone = c.Phone,
+             Profession = c.Profession,
+             Email = c.Email,
+             NID = c.NID,
+             Balance = c.Balance
+         })
+         .FirstOrDefault();
+
+            return customer;
+        }
+
+
 
         // Add a new customer
         public void AddCustomer(Customer customer)
@@ -94,7 +136,7 @@ namespace DynamicFormBuilder.Services
 
             _db.Customers.Add(customer);
             _db.SaveChanges();
-        
+
         }
         //Delete customer
         public void DeleteCustomer(int id)
@@ -168,6 +210,41 @@ namespace DynamicFormBuilder.Services
             return district?.DistrictName ?? "N/A";
         }
 
+        //        using Microsoft.AspNetCore.Mvc;
+        //using OfficeOpenXml;
+        //using System.IO;
 
+        //public class ExcelController : Controller
+        //    {
+        //        [HttpPost]
+        //        public IActionResult UploadExcel(IFormFile excelFile)
+        //        {
+        //            if (excelFile == null || excelFile.Length == 0)
+        //                return BadRequest("File not selected");
+
+        //            using (var stream = new MemoryStream())
+        //            {
+        //                excelFile.CopyTo(stream);
+        //                using (var package = new ExcelPackage(stream))
+        //                {
+        //                    ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
+        //                    int rowCount = worksheet.Dimension.Rows;
+
+        //                    for (int row = 2; row <= rowCount; row++)
+        //                    {
+        //                        var name = worksheet.Cells[row, 1].Value?.ToString();
+        //                        var email = worksheet.Cells[row, 2].Value?.ToString();
+
+        //                        // Insert into database
+        //                    }
+        //                }
+        //            }
+
+        //            return RedirectToAction("Index");
     }
 }
+
+
+
+
+

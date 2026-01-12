@@ -42,4 +42,5 @@ public class Customer
 
     [Column(TypeName = "decimal(18,2)")]
     public decimal Balance { get; set; }
+    
 }

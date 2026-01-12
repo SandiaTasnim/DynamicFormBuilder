@@ -1,0 +1,109 @@
+﻿@using DynamicFormBuilder.ViewModels
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<DynamicFormBuilder.ViewModels.EmployeeViewModel>
+
+@{
+    ViewData["Title"] = "Employee List";
+}
+@{
+    // ensure these are set earlier in the file as shown before
+    int pageSize = ViewBag.PageSize != null ? (int)ViewBag.PageSize : (Model?.PageSize ?? 10);
+    int pageNumber = Model?.PageNumber ?? (ViewBag.CurrentPage != null ? (int)ViewBag.CurrentPage : 1);
+
+    int count = ((pageNumber - 1) * pageSize) + 1;
+}
+
+
+<h2 class="mb-3">Employee List</h2>
+
+<div class="mb-3 d-flex gap-2">
+    <a asp-action="Create" class="btn btn-primary">
+        + Create Employee
+    </a>
+
+    <a asp-action="EmployeeStatusUpdateBulkUpload"
+       asp-controller="Employee"
+       class="btn btn-success">
+        📤 Upload Excel
+    </a>
+    <a asp-action="Excel_Download"
+       asp-controller="Employee"
+       asp-route-pageNumber="@Model.PageNumber"
+       asp-route-pageSize="@Model.PageSize"
+       class="btn btn-success">
+        Download Excel
+    </a>
+</div>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Employee ID</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Designation</th>
+            <th>Status</th>
+            <th style="width:120px;">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.EmployeeId</td>
+                    <td>@item.FullName</td>
+                    <td>@item.Email</td>
+                    <td>@item.Designation</td>
+                    <td>
+                        <span class="badge @(item.IsActive == true ? "bg-success" : "bg-danger")">
+                            @(item.IsActive == true ? "Active" : "InActive")
+                        </span>
+                    </td>
+                    <td>
+                        <a asp-action="Edit"
+                           asp-route-id="@item.Id"
+                           class="btn btn-sm btn-warning">
+                            Edit
+                        </a>
+                        <a asp-action="Delete"
+                           asp-route-id="@item.Id"
+                           class="btn btn-sm btn-danger">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="6" class="text-center text-muted">
+                    No employees found.
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+
+
+
+
+<!-- Pagination Controls -->
+@if (Model.PageCount > 1)
+{
+    <div class="mx-2 my-2">
+        @Html.PaginationFor(
+        Model,
+        page => Url.Action("Index", new
+        {
+            page,
+            pageSize = Model.PageSize
+        })
+        )
+</div>
+             }

@@ -1,0 +1,70 @@
+﻿@model EmployeeModel
+
+@{
+    ViewData["Title"] = "Create Employee";
+}
+
+<h2>Create Employee</h2>
+
+@using (Html.BeginForm("Create", "Employee", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    @* Hidden ID (optional, will be generated on server if needed) *@
+    @Html.HiddenFor(m => m.Id)
+
+    <div class="form-group mb-3">
+        <label asp-for="FullName"></label>
+        @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", placeholder = "Enter full name" })
+        @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="EmployeeId"></label>
+        @Html.TextBoxFor(m => m.EmployeeId, new { @class = "form-control", placeholder = "Enter Employee ID" })
+        @Html.ValidationMessageFor(m => m.EmployeeId, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Email"></label>
+        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Enter email" })
+        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Designation"></label>
+        @Html.TextBoxFor(m => m.Designation, new { @class = "form-control", placeholder = "Enter designation" })
+        @Html.ValidationMessageFor(m => m.Designation, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="DOB"></label>
+        @Html.TextBoxFor(m => m.DOB, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+        @Html.ValidationMessageFor(m => m.DOB, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Status</label>
+
+        @Html.DropDownListFor(
+        m => m.IsActive,
+        Model.StatusList,
+        "-- Select Status --",
+        new { @class = "form-control" }
+        )
+
+    @Html.ValidationMessageFor(m => m.IsActive, "", new { @class = "text-danger" })
+</div>
+
+
+
+
+
+<button type="submit" class="btn btn-primary">Create</button>
+<a href="@Url.Action("Index", "Employee")" class="btn btn-secondary">Cancel</a>
+}
+
+@section Scripts {
+    @Html.Partial("_ValidationScriptsPartial")
+}
+

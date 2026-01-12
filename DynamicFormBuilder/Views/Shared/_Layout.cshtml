@@ -1,18 +1,20 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Dynamic Form Builder</title>
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
     <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
 
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
@@ -21,78 +23,124 @@
             background-color: #f8f9fa;
         }
 
-        .navbar {
-            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        #wrapper {
+            min-height: 100vh;
         }
 
-        .card {
-            box-shadow: 0 0 10px rgba(0,0,0,.1);
+        #sidebar-wrapper {
+            width: 260px;
+            min-height: 100vh;
+        }
+
+        .sidebar-heading {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .list-group-item {
             border: none;
+            padding: 12px 20px;
         }
 
-        .field-item {
-            transition: all 0.3s ease;
-        }
-
-            .field-item:hover {
-                box-shadow: 0 4px 8px rgba(0,0,0,.15);
+            .list-group-item:hover {
+                background-color: #495057;
             }
 
-        .table-striped tbody tr:hover {
-            background-color: #e9ecef;
+        #page-content-wrapper {
+            width: 100%;
+        }
+
+        footer {
+            background: #fff;
         }
     </style>
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-dark bg-dark mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Form" asp-action="Index">
-                    <i class="bi bi-file-earmark-text"></i> Dynamic Form Builder
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Form" asp-action="Index">
-                                <i class="bi bi-list-ul"></i> Forms List
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Student" asp-action="Index">
-                                <i class="bi bi-list-ul"></i> Student List
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Customer" asp-action="Index">
-                                <i class="bi bi-list-ul"></i> Customer List
-                            </a>
-                        </li>
-                      @*   <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Form" asp-action="Create">
-                                <i class="bi bi-plus-circle"></i> Create Form
-                            </a>
-                        </li> *@
-                    </ul>
+@if (TempData["success"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div id="successToast"
+             class="toast align-items-center text-bg-success border-0"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true">
+
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    @TempData["success"]
                 </div>
+                <button type="button"
+                        class="btn-close btn-close-white me-2 m-auto"
+                        data-bs-dismiss="toast"
+                        aria-label="Close"></button>
             </div>
-        </nav>
-    </header>
 
-    <div class="container-fluid">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container text-center">
-            &copy; 2025 - Dynamic Form Builder - <a asp-area="" asp-controller="Form" asp-action="Index">Home</a>
         </div>
-    </footer>
+    </div>
+}
+
+<body>
+
+    <div class="d-flex" id="wrapper">
+
+        <!-- Sidebar -->
+        <div class="bg-dark text-white" id="sidebar-wrapper">
+            <div class="sidebar-heading px-3 py-4 border-bottom">
+                <i class="bi bi-file-earmark-text"></i>
+                Dynamic Form Builder
+            </div>
+
+            <div class="list-group list-group-flush">
+                <a asp-controller="Form" asp-action="Index"
+                   class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="bi bi-list-ul me-2"></i> Forms List
+                </a>
+
+                <a asp-controller="Student" asp-action="Index"
+                   class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="bi bi-people me-2"></i> Student List
+                </a>
+
+                <a asp-controller="Customer" asp-action="Index"
+                   class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="bi bi-person-badge me-2"></i> Customer List
+                </a>
+
+                <a asp-controller="Employee" asp-action="Index"
+                   class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="bi bi-person-lines-fill me-2"></i> Employee List
+                </a>
+            </div>
+        </div>
+        <!-- /Sidebar -->
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+
+            <!-- Top Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom">
+                <div class="container-fluid">
+                    <button class="btn btn-outline-light" id="menu-toggle">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <span class="navbar-brand ms-3">Dashboard</span>
+                </div>
+            </nav>
+
+            <main class="container-fluid mt-4">
+                @RenderBody()
+            </main>
+
+            <footer class="border-top text-muted mt-auto py-3">
+                <div class="container text-center">
+                    &copy; 2025 - Dynamic Form Builder |
+                    <a asp-controller="Form" asp-action="Index">Home</a>
+                </div>
+            </footer>
+
+        </div>
+        <!-- /Page Content -->
+
+    </div>
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
@@ -106,6 +154,31 @@
 
     <script src="~/js/site.js" asp-append-version="true"></script>
 
+    <script>
+        $("#menu-toggle").click(function (e) {
+            e.preventDefault();
+            $("#sidebar-wrapper").toggleClass("d-none");
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
+
+@if (TempData["success"] != null)
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var toastEl = document.getElementById('successToast');
+            if (toastEl) {
+                var toast = new bootstrap.Toast(toastEl, {
+                    delay: 3000   // auto-hide after 3 seconds
+                });
+                toast.show();
+            }
+        });
+    </script>
+}
+
+
 </html>

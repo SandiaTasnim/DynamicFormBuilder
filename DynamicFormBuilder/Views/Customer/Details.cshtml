@@ -1,73 +1,59 @@
-﻿@model Customer
-
+﻿@using DynamicFormBuilder.ViewModels
+@model CustomerViewModel
 @{
     ViewData["Title"] = "Customer Details";
 }
-
 <div class="container my-5">
-
     <!-- Page Title -->
     <div class="text-center mb-5">
         <h1 class="fw-bold">Customer Details</h1>
         <p class="text-muted">All the relevant information about this customer</p>
     </div>
-
     <!-- Card -->
     <div class="card shadow-lg border-0 rounded-4 p-4">
-
         <!-- Customer Name -->
         <div class="text-center mb-4">
-            <h2 class="fw-bold">@Model.FirstName @Model.LastName</h2>
+            <h2 class="fw-bold">@Model.FullName</h2>
         </div>
-
         <!-- Customer Info -->
         <div class="row g-4">
             <div class="col-md-6">
                 <h6 class="text-muted">Customer ID</h6>
                 <p class="fw-semibold">@Model.CustomerID</p>
             </div>
-
             <div class="col-md-6">
                 <h6 class="text-muted">Phone</h6>
                 <p>@Model.Phone</p>
             </div>
-
             <div class="col-md-6">
                 <h6 class="text-muted">Email</h6>
                 <p>@Model.Email</p>
             </div>
-
             <div class="col-md-6">
                 <h6 class="text-muted">NID</h6>
                 <p>@Model.NID</p>
             </div>
-
             <div class="col-md-6">
                 <h6 class="text-muted">Division</h6>
-                <p>@ViewBag.DivisionName</p>
+                <p>@Model.DivisionName</p>
             </div>
-
             <div class="col-md-6">
                 <h6 class="text-muted">District</h6>
-                <p>@ViewBag.DistrictName</p>
+                <p>@Model.DistrictName</p>
             </div>
-
             <div class="col-md-6">
                 <h6 class="text-muted">Date of Birth</h6>
                 <p>@Model.DOB?.ToString("yyyy-MM-dd")</p>
             </div>
-
             <div class="col-md-6">
                 <h6 class="text-muted">Profession</h6>
                 <p>@Model.Profession</p>
             </div>
-
             <!-- Balance -->
             <div class="col-md-6">
                 <h6 class="text-muted">Current Balance</h6>
                 <p id="existingBalance" class="fw-semibold">$@Model.Balance</p>
             </div>
-
             <!-- Add Balance Box -->
             <div class="col-md-6">
                 <h6 class="text-muted">Add Amount</h6>
@@ -75,41 +61,31 @@
                 <small class="text-success fw-bold d-block mt-1">New Balance: <span id="newBalance"></span></small>
             </div>
         </div>
-
         <!-- Update Button -->
         <form asp-action="UpdateBalance" method="post" class="mt-4 d-flex justify-content-end gap-2">
             <input type="hidden" name="id" value="@Model.CustomerID" />
             <input type="hidden" id="hiddenNewBalance" name="newBalance" />
-
             <button type="submit" id="updateBtn" class="btn btn-success btn-sm fw-semibold">
                 Update Balance
             </button>
-
             <a asp-action="Index" class="btn btn-secondary btn-sm fw-semibold">Back to List</a>
         </form>
     </div>
 </div>
-
 <script>
     let existingBalance = parseFloat("@Model.Balance");
-
     const addInput = document.getElementById("addAmount");
     const newBalanceLabel = document.getElementById("newBalance");
     const hiddenField = document.getElementById("hiddenNewBalance");
-
     addInput.addEventListener("input", function () {
         let addedValue = parseFloat(addInput.value);
-
         if (isNaN(addedValue)) {
             newBalanceLabel.textContent = "";
             hiddenField.value = "";
             return;
         }
-
         let updatedBalance = existingBalance + addedValue;
-
         newBalanceLabel.textContent = "$" + updatedBalance.toFixed(2);
-
         hiddenField.value = updatedBalance.toFixed(2);
     });
 </script>

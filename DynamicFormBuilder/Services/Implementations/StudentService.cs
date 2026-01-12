@@ -19,13 +19,13 @@ namespace DynamicFormBuilder.Services.Implementations
 
         public List<StudentModel> GetAllStudents()
         {
-            var students = _dbContext.StudentModels.ToList();
+            var students = _dbContext.EmployeeModels.ToList();
             return students;
         }
 
         public StudentModel GetStudentById(int id)
         {
-            return _dbContext.StudentModels.Find(id);//SELECT * FROM STUDENT WHERE ID =@id;
+            return _dbContext.EmployeeModels.Find(id);//SELECT * FROM STUDENT WHERE ID =@id;
         }
     }
 }

@@ -9,7 +9,7 @@ namespace DynamicFormBuilder.Services
         {
             services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<ICustomerService, CustomerService>();
-            //services.AddScoped<IEmployeeService, EmployeeService>();
+            services.AddScoped<IEmployeeService, EmployeeService>();
 
 
 
