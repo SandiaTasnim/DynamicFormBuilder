@@ -24,8 +24,6 @@ using X.PagedList.Extensions;
 
 namespace DynamicFormBuilder.Controllers
 {
-
-    
     public class EmployeeController : Controller
     {
 
@@ -146,26 +144,149 @@ namespace DynamicFormBuilder.Controllers
 
         //    return View(employee);
         //}
+        //[HttpGet]
+        //public IActionResult Delete(string id)
+        //{
+        //    var employee = _employeeService.GetEmployeeById(id);
+        //    if (employee == null) return NotFound();
+
+        //    // Return the view named "Delete" and pass the customer model
+        //    return View("Delete", employee);
+        //}
+
+        //// POST: /Customer/Delete
+
+
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public IActionResult DeleteConfirmed(string id)
+        //{
+        //    var employee = _employeeService.GetEmployeeById(id);
+        //    if (employee == null) return NotFound();
+        //    _employeeService.delete(id);
+        //    return RedirectToAction("Index");
+        //}
+
+
+        //public IActionResult Edit(string id)
+        //{
+        //    if (string.IsNullOrEmpty(id))
+        //    {
+        //        // For AJAX requests, return error message in partial view
+        //        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+        //        {
+        //            ViewBag.Message = "Employee not found.";
+        //            return PartialView("Edit", new EmployeeModel());
+        //        }
+        //        return NotFound();
+        //    }
+
+        //    var employee = _employeeService.GetById(id);
+
+        //    if (employee == null)
+        //    {
+        //        ViewBag.Message = "Employee not found.";
+        //        // For AJAX requests (modal), return partial view without layout
+        //        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+        //        {
+        //            return PartialView("Edit", new EmployeeModel());
+        //        }
+        //        return NotFound();
+        //    }
+
+        //    employee.StatusList = new SelectList(
+        //        new List<SelectListItem>
+        //        {
+        //    new SelectListItem { Text = "Active", Value = "true", Selected = employee.IsActive },
+        //    new SelectListItem { Text = "Inactive", Value = "false", Selected = !employee.IsActive }
+        //        },
+        //        "Value",
+        //        "Text",
+        //        employee.IsActive ? "true" : "false"
+        //    );
+
+        //    // Check if it's an AJAX request - return ONLY the partial view (no layout/nav)
+        //    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+        //    {
+        //        return PartialView("Edit", employee);
+        //    }
+
+        //    // For direct browser access, return the full view with layout
+        //    return View(employee);
+        //}
+
         [HttpGet]
         public IActionResult Delete(string id)
         {
-            var employee = _employeeService.GetEmployeeById(id);
-            if (employee == null) return NotFound();
+            if (string.IsNullOrEmpty(id))
+            {
+                // For AJAX requests, return error message in partial view
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    ViewBag.Message = "Employee not found.";
+                    return PartialView("Delete", new EmployeeModel());
+                }
+                return NotFound();
+            }
 
-            // Return the view named "Delete" and pass the customer model
+            var employee = _employeeService.GetEmployeeById(id);
+
+            if (employee == null)
+            {
+                ViewBag.Message = "Employee not found.";
+                // For AJAX requests (modal), return partial view without layout
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return PartialView("Delete", new EmployeeModel());
+                }
+                return NotFound();
+            }
+
+            // Check if it's an AJAX request - return ONLY the partial view (no layout/nav)
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("Delete", employee);
+            }
+
+            // For direct browser access, return the full view with layout
             return View("Delete", employee);
         }
-
-        // POST: /Customer/Delete
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(string id)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                // For AJAX requests
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Employee ID is required." });
+                }
+                return NotFound();
+            }
+
             var employee = _employeeService.GetEmployeeById(id);
-            if (employee == null) return NotFound();
+
+            if (employee == null)
+            {
+                // For AJAX requests
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Employee not found." });
+                }
+                return NotFound();
+            }
+
             _employeeService.delete(id);
+
+            // Return JSON for AJAX request (modal)
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new { success = true, message = "Employee deleted successfully" });
+            }
+
+            TempData["success"] = "Employee deleted successfully";
             return RedirectToAction("Index");
         }
 
@@ -173,38 +294,49 @@ namespace DynamicFormBuilder.Controllers
         public IActionResult Edit(string id)
         {
             if (string.IsNullOrEmpty(id))
+            {
+                // For AJAX requests, return error message in partial view
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    ViewBag.Message = "Employee not found.";
+                    return PartialView("Edit", new EmployeeModel());
+                }
                 return NotFound();
+            }
 
             var employee = _employeeService.GetById(id);
+
             if (employee == null)
+            {
+                ViewBag.Message = "Employee not found.";
+                // For AJAX requests (modal), return partial view without layout
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return PartialView("Edit", new EmployeeModel());
+                }
                 return NotFound();
+            }
 
             employee.StatusList = new SelectList(
-            new List<SelectListItem>
-            {
-                new SelectListItem
+                new List<SelectListItem>
                 {
-                    Text = "Active",
-                    Value = "true",
-                    Selected = employee.IsActive
+            new SelectListItem { Text = "Active", Value = "true", Selected = employee.IsActive },
+            new SelectListItem { Text = "Inactive", Value = "false", Selected = !employee.IsActive }
                 },
-                new SelectListItem
-                {
-                    Text = "Inactive",
-                    Value = "false",
-                    Selected = !employee.IsActive
-                }
-            },
-            "Value",
-            "Text",
-            employee.IsActive ? "true" : "false"
-        );
+                "Value",
+                "Text",
+                employee.IsActive ? "true" : "false"
+            );
 
+            // Check if it's an AJAX request - return ONLY the partial view (no layout/nav)
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("Edit", employee);
+            }
 
+            // For direct browser access, return the full view with layout
             return View(employee);
         }
-
-        // EDIT - POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(EmployeeModel model)
@@ -222,15 +354,66 @@ namespace DynamicFormBuilder.Controllers
                     model.IsActive ? "true" : "false"
                 );
 
+                // Return partial view with validation errors for AJAX (modal)
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return PartialView("Edit", model);
+                }
+
                 return View(model);
             }
 
             _employeeService.Update(model);
 
+            // Return JSON for AJAX request (modal)
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new { success = true, message = "Employee updated successfully" });
+            }
+
             TempData["success"] = "Employee updated successfully";
             return RedirectToAction("Index");
         }
 
+        public IActionResult Details(string employeeId)
+        {
+            //var employee = _employeeService.GetEmployeeById(id);
+            if (employeeId == null)
+            {
+                // For AJAX requests, return error message in partial view
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    ViewBag.Message = "Employee not found.";
+                    return PartialView("Details", new List<EmployeeChangeHistoriesViewModel>());
+                }
+                return NotFound();
+            }
+
+            var history = _employeeService.GetEmployeeChangeHistoryRecord(employeeId);
+
+            if (history == null || !history.Any())
+            {
+                ViewBag.Message = "No change history found for this employee.";
+
+                // For AJAX requests (modal), return partial view without layout
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return PartialView("Details", new List<EmployeeChangeHistoriesViewModel>());
+                }
+
+                // For direct browser access, return full view with layout
+                return View(new List<EmployeeChangeHistoriesViewModel>());
+            }
+
+            // Check if it's an AJAX request - return ONLY the partial view (no layout/nav)
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("Details", history);
+            }
+
+            // For direct browser access, return the full view with layout
+            return View(history);
+        }
 
         #region Employee Status Update
         public ActionResult EmployeeStatusUpdate(bool searchStatus, string others, string searchEmployeeId, int page = 1, int pageSize = 30)
@@ -386,12 +569,15 @@ namespace DynamicFormBuilder.Controllers
                         // ✅ FIX: Convert status string to boolean
 
                         bool isActive = status.Equals("Active", StringComparison.OrdinalIgnoreCase);
-
+                 
                         empList.Add(new EmployeeModel
                         {
                             EmployeeId = employeeId,
+                   
+
                             IsActive = isActive // ✅ Now properly assigned
                         });
+
 
                         processedEmployeeIds.Add(employeeId);
                     }
@@ -422,14 +608,19 @@ namespace DynamicFormBuilder.Controllers
                             throw new Exception($"Employee data not found for ID: {emp.EmployeeId}");
 
                         // Update the status
-                        data.IsActive = emp.IsActive;
+                        // data.IsActive = emp.IsActive;
                         //data.UpdatedDate = now; // Optional: track when updated
                         //data.UpdatedBy = User.Identity.Name; // Optional: track who updated
 
                         // ✅ FIX: Uncommented and added error checking
-                         _employeeService.Update(data);
+                        // _employeeService.Update(data);
+                        _employeeService.UpdateWithHistory(emp.EmployeeId, emp.IsActive);
 
-                        
+
+
+
+
+
                         updatedCount++;
                     }
 
@@ -455,6 +646,7 @@ namespace DynamicFormBuilder.Controllers
                     }
                 }
             }
+
 
             return CreateJsonResult(page, pageSize, message);
         }

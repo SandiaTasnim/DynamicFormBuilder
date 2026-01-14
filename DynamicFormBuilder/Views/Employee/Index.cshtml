@@ -31,7 +31,12 @@
        asp-controller="Employee"
        asp-route-pageNumber="@Model.PageNumber"
        asp-route-pageSize="@Model.PageSize"
-       class="btn btn-success">
+       class="btn btn-success"
+       style="background-color: #9933ff
+; color:white; border-color: #9933ff
+
+;">
+        
         Download Excel
     </a>
 </div>
@@ -63,14 +68,29 @@
                         </span>
                     </td>
                     <td>
-                        <a asp-action="Edit"
+                        @* <a asp-action="Edit"
                            asp-route-id="@item.Id"
-                           class="btn btn-sm btn-warning">
+                           class="btn btn-sm btn-secondary">
+                            Edit
+                        </a> *@
+                        <a href="javascript:void(0);"
+                           onclick="openEditModal('@item.Id')"
+                           class="btn btn-primary btn-sm">
                             Edit
                         </a>
-                        <a asp-action="Delete"
+                        <button type="button"
+                                class="btn btn-sm btn-info"
+                                onclick="loadEmployeeHistory('@item.EmployeeId')">
+                            Details
+                        </button>
+                        @* <a asp-action="Delete"
                            asp-route-id="@item.Id"
                            class="btn btn-sm btn-danger">
+                            Delete
+                        </a> *@
+                        <a href="javascript:void(0);"
+                           onclick="openDeleteModal('@item.Id')"
+                           class="btn btn-danger btn-sm">
                             Delete
                         </a>
                     </td>
@@ -88,11 +108,6 @@
     </tbody>
 </table>
 
-
-
-
-
-
 <!-- Pagination Controls -->
 @if (Model.PageCount > 1)
 {
@@ -106,4 +121,181 @@
         })
         )
 </div>
-             }
+}
+
+<div class="modal fade" id="deleteEmployeeModal" tabindex="-1" aria-labelledby="deleteEmployeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteEmployeeModalLabel">Delete Employee</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="deleteModalBody">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editEmployeeModal" tabindex="-1" aria-labelledby="editEmployeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editEmployeeModalLabel">Edit Employee</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="editModalBody">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ADD THIS MODAL STRUCTURE -->
+<div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="historyModalLabel">Employee Change History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="historyModalBody">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<!-- Update your edit button/link in the employee list -->
+
+
+
+@section Scripts {
+    <script>
+        function loadEmployeeHistory(employeeId) {
+
+            // Show modal
+            var modal = new bootstrap.Modal(document.getElementById('historyModal'));
+            modal.show();
+
+            // Show spinner
+            $('#historyModalBody').html(`
+                <div class="text-center py-5">
+                    <div class="spinner-border" role="status"></div>
+                    <div class="mt-2">Loading...</div>
+                </div>
+            `);
+
+            // AJAX call
+            $.ajax({
+                url: '@Url.Action("Details", "Employee")',
+                type: 'GET',
+                data: { employeeId: employeeId },
+
+                success: function (result) {
+                    setTimeout(() => {
+                        $('#historyModalBody').html(result);
+                    }, 800);
+                }, // ✅ REQUIRED comma
+
+                error: function (xhr, status, error) {
+                    $('#historyModalBody').html(`
+                        <div class="alert alert-danger">
+                            <h4>Error</h4>
+                            <p>Failed to load employee history. Please try again.</p>
+                            <small>${error}</small>
+                        </div>
+                    `);
+                }
+            });
+        }
+        function openEditModal(id) {
+            // Show modal
+            var modal = new bootstrap.Modal(document.getElementById('editEmployeeModal'));
+            modal.show();
+
+            // Show spinner
+            $('#editModalBody').html(`
+                <div class="text-center py-5">
+                    <div class="spinner-border" role="status"></div>
+                    <div class="mt-2">Loading...</div>
+                </div>
+            `);
+
+            // AJAX call
+            $.ajax({
+                url: '@Url.Action("Edit", "Employee")/' + id,
+                type: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                success: function (result) {
+                    setTimeout(() => {
+                        $('#editModalBody').html(result);
+                    }, 500);
+                },
+                error: function (xhr, status, error) {
+                    $('#editModalBody').html(`
+                        <div class="alert alert-danger">
+                            <h4>Error</h4>
+                            <p>Failed to load employee data. Please try again.</p>
+                            <small>${error}</small>
+                        </div>
+                    `);
+                }
+            });
+        }
+        function openDeleteModal(id) {
+            // Show modal
+            var modal = new bootstrap.Modal(document.getElementById('deleteEmployeeModal'));
+            modal.show();
+
+            // Show spinner
+            $('#deleteModalBody').html(`
+                <div class="text-center py-5">
+                    <div class="spinner-border" role="status"></div>
+                    <div class="mt-2">Loading...</div>
+                </div>
+            `);
+
+            // AJAX call
+            $.ajax({
+                url: '@Url.Action("Delete", "Employee")/' + id,
+                type: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                success: function (result) {
+                    setTimeout(() => {
+                        $('#deleteModalBody').html(result);
+                    }, 500);
+                },
+                error: function (xhr, status, error) {
+                    $('#deleteModalBody').html(`
+                        <div class="alert alert-danger">
+                            <h4>Error</h4>
+                            <p>Failed to load employee data. Please try again.</p>
+                            <small>${error}</small>
+                        </div>
+                    `);
+                }
+            });
+        }
+    </script>
+
+}

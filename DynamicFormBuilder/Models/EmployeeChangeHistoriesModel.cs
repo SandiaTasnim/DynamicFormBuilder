@@ -1,8 +1,11 @@
-﻿namespace DynamicFormBuilder.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace DynamicFormBuilder.Models
 {
     public class EmployeeChangeHistoriesModel
     {
-        public int Id { get; set; }
+        [Key]
+        public Guid Id { get; set; }   // ✅ uniqueidentifier
         public string EmployeeId { get; set; }
         public string PreviousData { get; set; }
         public string UpdatedData { get; set; }

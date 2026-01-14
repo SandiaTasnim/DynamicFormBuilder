@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Office2010.ExcelAc;
 using DynamicFormBuilder.Models;
 using DynamicFormBuilder.Services.Interfaces;
+using DynamicFormBuilder.ViewModels;
 using ISMS.Web.Areas.Admin.Controllers;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -62,6 +63,7 @@ namespace DynamicFormBuilder.Services.Implementations
 
 
         }
+   
 
         public IEnumerable<EmployeeModel> GetAll()
         {
@@ -102,6 +104,20 @@ namespace DynamicFormBuilder.Services.Implementations
             if (existing == null)
                 throw new Exception("Employee not found");
 
+            if (existing.IsActive != employee.IsActive)
+            {
+                var history = new EmployeeChangeHistoriesModel
+                {
+                    Id = new Guid(),
+                    EmployeeId = existing.EmployeeId,   // FK
+                    PreviousData = existing.IsActive ? "Active" : "Inactive",
+                    UpdatedData = employee.IsActive ? "Active" : "Inactive",
+                    ChangedAt = DateTime.UtcNow
+                };
+
+                _context.EmployeeChangeHistories.Add(history);
+            }
+
             existing.EmployeeId=employee.EmployeeId;
             existing.FullName = employee.FullName;
             existing.Email = employee.Email;
@@ -110,26 +126,90 @@ namespace DynamicFormBuilder.Services.Implementations
             existing.DOB = employee.DOB;
 
             _context.SaveChanges();
+
+            
             return existing;
+
+
 
             //return employee; // return the updated model
         }
-        public EmployeeModel UpdateStatus(EmployeeModel employee)
+        //public void UpdateStatus(string employeeId, bool isActive)
+        //{
+
+        //    var existing = _context.Employees.FirstOrDefault(e => e.Id == employeeId);
+        //    if (existing == null)
+        //        throw new Exception("Employee not found");
+
+        //    if (existing.IsActive != isActive)
+        //    {
+        //        var history = new EmployeeChangeHistoriesModel
+        //        {
+        //            Id = new Guid(),
+        //            EmployeeId = existing.EmployeeId,   // FK
+        //            PreviousData = existing.IsActive ? "Active" : "Inactive",
+        //            UpdatedData = isActive ? "Active" : "Inactive",
+        //            ChangedAt = DateTime.UtcNow
+        //        };
+
+        //        _context.EmployeeChangeHistories.Add(history);
+        //    }
+        //}
+
+        // Add this new method to your EmployeeService
+        public void UpdateWithHistory(string employeeId, bool newStatus)
         {
-            var existing = _context.Employees.FirstOrDefault(e => e.EmployeeId == employee.EmployeeId);
+            var existing = _context.Employees.FirstOrDefault(e => e.EmployeeId == employeeId);
+
             if (existing == null)
-                throw new Exception("Employee not found");
+                throw new Exception($"Employee not found: {employeeId}");
 
-            existing.FullName = existing.FullName;
-            existing.Email = existing.Email;
-            existing.Designation = existing.Designation;
-            existing.IsActive = employee.IsActive;
-            existing.DOB = existing.DOB;
-            _context.Employees.Update(existing);
+            // Check if status actually changed
+            if (existing.IsActive != newStatus)
+            {
+                // Save history BEFORE updating
+                var history = new EmployeeChangeHistoriesModel
+                {
+                    Id = Guid.NewGuid(),
+                    EmployeeId = existing.EmployeeId,
+                    PreviousData = existing.IsActive ? "Active" : "Inactive",
+                    UpdatedData = newStatus ? "Active" : "Inactive",
+                    ChangedAt = DateTime.UtcNow
+                };
+                _context.EmployeeChangeHistories.Add(history);
+
+                // Now update the status
+                existing.IsActive = newStatus;
+            }
+
             _context.SaveChanges();
-
-            return employee; 
         }
+
+       
+        //public EmployeeModel UpdateStatus(EmployeeModel employee)
+        //{
+        //    var existing = _context.Employees.FirstOrDefault(e => e.EmployeeId == employee.EmployeeId);
+        //    if (existing == null)
+        //        throw new Exception("Employee not found");
+
+        //    existing.FullName = existing.FullName;
+        //    existing.Email = existing.Email;
+        //    existing.Designation = existing.Designation;
+        //    existing.IsActive = employee.IsActive;
+        //    existing.DOB = existing.DOB;
+        //    _context.Employees.Update(existing);
+        //    _context.SaveChanges();
+
+        //    var changingData = new EmployeeChangeHistoriesModel();
+        //    changingData.EmployeeId = existing.EmployeeId;
+        //    changingData.PreviousData = existing.IsActive.ToString();
+        //    changingData.UpdatedData = employee.IsActive.ToString();
+        //    changingData.ChangedAt = DateTime.Now;
+
+        //    _context.EmployeeChangeHistories.Add(changingData);
+        //    _context.SaveChanges();
+        //    return employee; 
+        //}
 
         public void delete(string id)
         {
@@ -141,33 +221,113 @@ namespace DynamicFormBuilder.Services.Implementations
             _context.SaveChanges(); 
         }
 
-        public IEnumerable<EmployeeChangeHistoriesModel> GetEmployeeChangeHistoryRecord(string mainTableId)
+        //public IEnumerable<EmployeeChangeHistoriesModel> GetEmployeeChangeHistoryRecord(string Id)
+        //{
+        //    try
+        //    {
+        //        return _context.EmployeeChangeHistories
+        //                       .Where(x => x.EmployeeId == Id)
+        //                       .OrderByDescending(x => x.ChangedAt)
+        //                       .Select(x => new EmployeeChangeHistoriesModel
+        //                       {
+        //                           EmployeeId = x.EmployeeId,
+        //                           PreviousData = x.PreviousData,
+        //                           UpdatedData = x.UpdatedData,
+
+        //                           ChangedAt = x.ChangedAt
+        //                       })
+        //                       .ToList();
+        //    }
+        //    catch
+        //    {
+        //        return Enumerable.Empty<EmployeeChangeHistoriesModel>();
+        //    }
+        //}
+        public IEnumerable<EmployeeChangeHistoriesViewModel> GetEmployeeChangeHistoryRecord(string employeeId)
         {
             try
             {
+                // Convert string Id to Guid for comparison
+                if (employeeId==null)
+                {
+                    return Enumerable.Empty<EmployeeChangeHistoriesViewModel>();
+                }
+
                 return _context.EmployeeChangeHistories
-                               .Where(x => x.EmployeeId == mainTableId)
+                               .Where(x => x.EmployeeId == employeeId)
                                .OrderByDescending(x => x.ChangedAt)
-                               .Select(x => new EmployeeChangeHistoriesModel
+                               .Select(x => new EmployeeChangeHistoriesViewModel
                                {
+                                   Id = x.Id,
                                    EmployeeId = x.EmployeeId,
                                    PreviousData = x.PreviousData,
                                    UpdatedData = x.UpdatedData,
-                                                                     
                                    ChangedAt = x.ChangedAt
                                })
                                .ToList();
             }
             catch
             {
-                return Enumerable.Empty<EmployeeChangeHistoriesModel>();
+                return Enumerable.Empty<EmployeeChangeHistoriesViewModel>();
             }
         }
-        
+        //public IEnumerable<EmployeeChangeHistoriesModel> GetEmployeeChangeHistoryRecord(string Id)
+        //{
+        //    try
+        //    {
+        //        return _context.EmployeeChangeHistories
+        //                       .Where(x => x.EmployeeId == Id)
+        //                       .OrderByDescending(x => x.ChangedAt)
+        //                       .Select(x => new EmployeeChangeHistoriesModel
+        //                       {
+        //                           EmployeeId = x.EmployeeId,
+        //                           PreviousData = x.PreviousData,
+        //                           UpdatedData = x.UpdatedData,
+
+        //                           ChangedAt = x.ChangedAt
+        //                       })
+        //                       .ToList();
+        //    }
+        //    catch
+        //    {
+        //        return Enumerable.Empty<EmployeeChangeHistoriesModel>();
+        //    }
+        //}
+        //public IEnumerable<EmployeeChangeHistoriesViewModel> GetEmployeeChangeHistoryRecord(string Id)
+        //{
+        //    try
+        //    {
+        //        // Convert string Id to Guid for comparison
+        //        if (!Guid.TryParse(Id, out var guidId))
+        //        {
+        //            return Enumerable.Empty<EmployeeChangeHistoriesViewModel>();
+        //        }
+
+        //        return _context.EmployeeChangeHistories
+        //                       .Where(x => x.Id == guidId)
+        //                       .OrderByDescending(x => x.ChangedAt)
+        //                       .Select(x => new EmployeeChangeHistoriesViewModel
+        //                       {
+        //                           Id = x.Id,
+        //                           EmployeeId = x.EmployeeId,
+        //                           PreviousData = x.PreviousData,
+        //                           UpdatedData = x.UpdatedData,
+        //                           ChangedAt = x.ChangedAt
+        //                       })
+        //                       .ToList();
+        //    }
+        //    catch
+        //    {
+        //        return Enumerable.Empty<EmployeeChangeHistoriesViewModel>();
+        //    }
+        //}
 
 
-            
-      
+
+
+
+
+
         public bool IsEmployeeIdExist(string employeeId)
         {
             return _context.Employees.Any(e => e.EmployeeId == employeeId);

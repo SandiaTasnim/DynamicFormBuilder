@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 public class ApplicationDbContext : DbContext
 {
     internal readonly object Employee;
-
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
@@ -19,4 +18,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<EmployeeModel> Employees { get; set; }
     public DbSet<EmployeeChangeHistoriesModel> EmployeeChangeHistories { get; set; }
 
-    }
+}
+
+
+
+
+
