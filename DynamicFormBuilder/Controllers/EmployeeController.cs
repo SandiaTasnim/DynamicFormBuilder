@@ -24,6 +24,7 @@ using X.PagedList.Extensions;
 
 namespace DynamicFormBuilder.Controllers
 {
+    [Authorize]
     public class EmployeeController : Controller
     {
 

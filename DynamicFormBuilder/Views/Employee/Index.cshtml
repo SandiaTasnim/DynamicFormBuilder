@@ -66,34 +66,47 @@
                         <span class="badge @(item.IsActive == true ? "bg-success" : "bg-danger")">
                             @(item.IsActive == true ? "Active" : "InActive")
                         </span>
+                    <td style="overflow: inherit;">
+
+                        <div class="dropdown">
+                            <button class="btn btn-info dropdown-toggle btn-sm"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                Action
+                            </button>
+
+                            <ul class="dropdown-menu">
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="javascript:void(0);"
+                                       onclick="openEditModal('@item.Id')">
+                                        ✏ Edit
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="javascript:void(0);"
+                                       onclick="loadEmployeeHistory('@item.EmployeeId')">
+                                        📄 Details
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item text-danger"
+                                       href="javascript:void(0);"
+                                       onclick="openDeleteModal('@item.Id')">
+                                        🗑 Delete
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </div>
+
                     </td>
-                    <td>
-                        @* <a asp-action="Edit"
-                           asp-route-id="@item.Id"
-                           class="btn btn-sm btn-secondary">
-                            Edit
-                        </a> *@
-                        <a href="javascript:void(0);"
-                           onclick="openEditModal('@item.Id')"
-                           class="btn btn-primary btn-sm">
-                            Edit
-                        </a>
-                        <button type="button"
-                                class="btn btn-sm btn-info"
-                                onclick="loadEmployeeHistory('@item.EmployeeId')">
-                            Details
-                        </button>
-                        @* <a asp-action="Delete"
-                           asp-route-id="@item.Id"
-                           class="btn btn-sm btn-danger">
-                            Delete
-                        </a> *@
-                        <a href="javascript:void(0);"
-                           onclick="openDeleteModal('@item.Id')"
-                           class="btn btn-danger btn-sm">
-                            Delete
-                        </a>
-                    </td>
+
                 </tr>
             }
         }

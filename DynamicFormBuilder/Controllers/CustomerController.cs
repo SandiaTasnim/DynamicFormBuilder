@@ -15,9 +15,12 @@ using System.Numerics;
 using X.PagedList;
 using X.PagedList.Extensions;
 using System.Data.OleDb;
+using Microsoft.AspNetCore.Authorization;
 
+[Authorize]
 public class CustomerController : Controller
 {
+    
     private readonly ICustomerService _customerService;
     private readonly ApplicationDbContext _db;
 

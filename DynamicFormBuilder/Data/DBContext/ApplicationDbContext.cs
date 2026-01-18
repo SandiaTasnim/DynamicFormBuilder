@@ -1,8 +1,10 @@
 ﻿using DynamicFormBuilder.Models;
 using ISMS.Web.Areas.Admin.Controllers;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext
+    : IdentityDbContext<ApplicationUser>
 {
     internal readonly object Employee;
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)

@@ -2,10 +2,12 @@
 using DynamicFormBuilder.Data;
 using DynamicFormBuilder.Models;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace DynamicFormBuilder.Controllers
 {
+    [Authorize]
     public class FormController : Controller
     {
         private readonly FormRepository _repository;
