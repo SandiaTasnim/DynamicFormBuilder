@@ -4,18 +4,19 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using DynamicFormBuilder.Services;
 using DynamicFormBuilder.Services.Interfaces;
 using DynamicFormBuilder.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.IdentityModel.Tokens;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
+using System.ComponentModel;
 using System.Data;
+using System.Data.OleDb;
 using System.Drawing;
 using System.Numerics;
 using X.PagedList;
 using X.PagedList.Extensions;
-using System.Data.OleDb;
-using Microsoft.AspNetCore.Authorization;
 
 [Authorize]
 public class CustomerController : Controller
@@ -273,6 +274,96 @@ public class CustomerController : Controller
     }
 
 
+
+    public IActionResult UploadExcel()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> UploadExcel(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            TempData["Message"] = "No file selected!";
+            return RedirectToAction("Index");
+        }
+
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (extension != ".xlsx")
+        {
+            TempData["Message"] = "Please upload a valid Excel file (.xlsx)";
+            return RedirectToAction("Index");
+        }
+
+        int updated = 0;
+        int notFound = 0;
+
+        try
+        {
+            using var stream = new MemoryStream();
+            await file.CopyToAsync(stream);
+            stream.Position = 0;
+
+            using var package = new ExcelPackage(stream);
+            var sheet = package.Workbook.Worksheets.FirstOrDefault();
+
+            if (sheet?.Dimension == null)
+            {
+                TempData["Message"] = "Excel file is empty or invalid!";
+                return RedirectToAction("Index");
+            }
+
+            var allCustomers = _customerService.GetAllCustomers()?.ToList();
+            if (allCustomers == null || !allCustomers.Any())
+            {
+                TempData["Message"] = "No customers in database!";
+                return RedirectToAction("Index");
+            }
+
+            for (int row = 2; row <= sheet.Dimension.Rows; row++)
+            {
+                string nameFromExcel = sheet.Cells[row, 1].GetValue<string>()?.Trim();
+                string professionFromExcel = sheet.Cells[row, 2].GetValue<string>()?.Trim();
+
+                if (string.IsNullOrWhiteSpace(nameFromExcel))
+                    continue;
+
+
+                var normalizedExcelName = nameFromExcel.Replace("  ", " ").ToLower();
+
+                var customer = allCustomers.FirstOrDefault(p =>
+                    !string.IsNullOrWhiteSpace(p.FullName) &&
+                    p.FullName.Replace("  ", " ").ToLower() == normalizedExcelName
+                );
+
+                if (customer != null)
+                {
+                    // Get fresh instance from DB and update
+                    var dbCustomer = _customerService.GetCustomerById(customer.CustomerID);
+                    if (dbCustomer != null)
+                    {
+                        dbCustomer.Profession = professionFromExcel;
+                        _customerService.GetUpdateCustomer(dbCustomer);
+                        updated++;
+                    }
+                }
+                else
+                {
+                    notFound++;
+                }
+            }
+
+            TempData["Message"] = $"✓ {updated} customers updated. {notFound} names not found.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Message"] = $"Error: {ex.Message}";
+        }
+
+        return RedirectToAction("Index");
+    }
+
     [HttpPost("Edit")]
     [ValidateAntiForgeryToken]
     public IActionResult Edit(Customer model)
@@ -419,7 +510,6 @@ public class CustomerController : Controller
             {
                 var headerColumn = 1;
                 ws.Cell(1, headerColumn++).Value = "Full Name";
-                ws.Cell(1, headerColumn++).Value = "DOB";
                 ws.Cell(1, headerColumn++).Value = "Profession";
                 ws.Cell(1, headerColumn++).Value = "Phone";
                 ws.Cell(1, headerColumn++).Value = "District";
@@ -438,7 +528,6 @@ public class CustomerController : Controller
                 {
                     var DataColumn = 1;
                     ws.Cell(rowId, DataColumn++).Value = singleData.FullName;
-                    ws.Cell(rowId, DataColumn++).Value = singleData.DOB?.ToString("yyyy-MM-dd");
                     ws.Cell(rowId, DataColumn++).Value = singleData.Profession;
                     ws.Cell(rowId, DataColumn++).Value = singleData.Phone;
                     ws.Cell(rowId, DataColumn++).Value = singleData.DistrictName;
@@ -513,11 +602,11 @@ public class CustomerController : Controller
                     Profession = workSheet.Cells[i, 5].Text,
 
                     // Balance (string → decimal)
-                    Balance = decimal.TryParse(workSheet.Cells[i, 7].Text, out decimal balance)
+                    Balance = decimal.TryParse(workSheet.Cells[i, 6].Text, out decimal balance)
                         ? balance
                         : 0,
 
-                    NID = workSheet.Cells[i, 8].Text,
+                    NID = workSheet.Cells[i, 7].Text,
                     
                 });
 
@@ -586,6 +675,330 @@ public class CustomerController : Controller
     //}
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

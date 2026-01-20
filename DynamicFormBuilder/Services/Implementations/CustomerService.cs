@@ -35,7 +35,7 @@ namespace DynamicFormBuilder.Services
                              Phone = c.Phone,
                              Email = c.Email,
                              Profession = c.Profession,
-                             DOB = c.DOB,
+                            
                              Balance = c.Balance,
                              NID = c.NID,
                              DivisionID = c.DivisionID,
@@ -112,7 +112,7 @@ namespace DynamicFormBuilder.Services
              FullName = c.FirstName + " " + c.LastName,
              DivisionName = d.DivisionName,
              DistrictName = dis.DistrictName,
-             DOB = c.DOB,
+           
              DivisionID = c.DivisionID,
              DistrictID = c.DistrictID,
              Phone = c.Phone,
@@ -138,6 +138,9 @@ namespace DynamicFormBuilder.Services
             _db.SaveChanges();
 
         }
+
+        
+
         //Delete customer
         public void DeleteCustomer(int id)
         {
@@ -172,7 +175,6 @@ namespace DynamicFormBuilder.Services
             existing.NID = customer.NID;
             existing.DivisionID = customer.DivisionID;
             existing.DistrictID = customer.DistrictID;
-            existing.DOB = customer.DOB;
             existing.Profession = customer.Profession;
             existing.Balance = customer.Balance;
 
@@ -210,6 +212,20 @@ namespace DynamicFormBuilder.Services
             return district?.DistrictName ?? "N/A";
         }
 
+        public void GetUpdateCustomer(Customer customer)
+        {
+            if (customer == null) return;
+
+            var existing = _db.Customers.Find(customer.CustomerID);
+            if (existing == null) return;
+
+
+            _db.Entry(existing).CurrentValues.SetValues(customer);
+            _db.SaveChanges();
+        }
+
+
+
         //        using Microsoft.AspNetCore.Mvc;
         //using OfficeOpenXml;
         //using System.IO;
@@ -242,6 +258,8 @@ namespace DynamicFormBuilder.Services
 
         //            return RedirectToAction("Index");
     }
+
+
 }
 
 

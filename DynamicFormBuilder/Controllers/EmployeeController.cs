@@ -49,6 +49,7 @@ namespace DynamicFormBuilder.Controllers
                 EmployeeId = e.EmployeeId,
                 FullName = e.FullName,
                 Email = e.Email,
+                DOB=e.DOB,
                 Designation = e.Designation,
                 IsActive = e.IsActive
             });

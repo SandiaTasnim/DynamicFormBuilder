@@ -47,6 +47,7 @@
             <th>Employee ID</th>
             <th>Full Name</th>
             <th>Email</th>
+            <th>DOB</th>
             <th>Designation</th>
             <th>Status</th>
             <th style="width:120px;">Action</th>
@@ -61,6 +62,7 @@
                     <td>@item.EmployeeId</td>
                     <td>@item.FullName</td>
                     <td>@item.Email</td>
+                    <td>@item.DOB?.ToString("yyyy-MM-dd")</td>
                     <td>@item.Designation</td>
                     <td>
                         <span class="badge @(item.IsActive == true ? "bg-success" : "bg-danger")">

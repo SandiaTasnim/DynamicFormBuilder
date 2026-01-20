@@ -33,8 +33,8 @@ public class Customer
     public int? DivisionID { get; set; }
     public int? DistrictID { get; set; }
 
-    [DataType(DataType.Date)]
-    public DateTime? DOB { get; set; }
+    //[DataType(DataType.Date)]
+    //public DateTime? DOB { get; set; }
 
     [StringLength(150)]
     [RegularExpression(@"^[^\d]+$", ErrorMessage = "Profession cannot contain numbers")]

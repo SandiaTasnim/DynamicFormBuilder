@@ -35,11 +35,9 @@
   
 
     <!-- Buttons -->
-    <div class="col-md-3">
+    <div class="col-md-5">
         <button type="submit" class="btn btn-primary">Search</button>
         <a asp-action="Index" class="btn btn-secondary">Reset</a>
-  
-
         <a asp-action="Excel_Download"
            asp-route-name="@ViewBag.SearchName"
            asp-route-phone="@ViewBag.SearchPhone"
@@ -47,15 +45,10 @@
            class="btn btn-success ">
             Download Excel
         </a>
+        <a asp-action="UploadExcel" class="btn btn-dark">Upload Excel</a>
+
+        </div>
         
-
-
-
-
-
-    </div>
-
-
 </form>
 
 
@@ -70,7 +63,7 @@
             <th>Phone</th>
             <th>Email</th>
             <th>NID</th>
-            <th>DOB</th>
+         
             <th>Profession</th>
             <th>Balance</th>
             <th>Actions</th>
@@ -88,7 +81,7 @@
                 <td>@customer.Phone</td>
                 <td>@customer.Email</td>
                 <td>@customer.NID</td>
-                <td>@customer.DOB?.ToString("yyyy-MM-dd")</td>
+               
                 <td>@customer.Profession</td>
                 <td>@customer.Balance.ToString("C")</td>
                 <td>

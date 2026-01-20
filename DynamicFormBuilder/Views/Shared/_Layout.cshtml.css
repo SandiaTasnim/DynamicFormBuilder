@@ -14,7 +14,7 @@ a {
         color: #005fa3;
     }
 
-/*   Navigation & Branding*/
+   Navigation & Branding
 .navbar {
     padding: 0 !important;
 }
@@ -39,7 +39,7 @@ a {
     }
 
 
-/*   Buttons*/
+   Buttons
   
 .btn-primary {
     color: #fff;
@@ -71,7 +71,7 @@ a {
         color: #fff;
     }
 
-/*Layout Structure*/
+Layout Structure
 #wrapper {
     min-height: 100vh;
     display: flex;
@@ -83,13 +83,22 @@ a {
     flex-direction: column;
     transition: all 0.3s ease;
 }
+#page-content-wrapper {
+    margin-left: 260px;  same as sidebar width 
+    width: calc(100% - 260px);  remaining space 
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
 
     #page-content-wrapper main {
         flex: 1;
         min-height: calc(100vh - 150px);
     }
 
-/* Sidebar Design*/
+ Sidebar Design
 #sidebar-wrapper {
     width: 260px;
     background-color: #2c3034;
@@ -120,7 +129,7 @@ a {
         font-size: 1.25rem;
     }
 
-/* Sidebar Menu Items*/
+ Sidebar Menu Items
 #sidebar-wrapper .list-group-item {
     display: flex;
     align-items: center;
@@ -145,7 +154,7 @@ a {
         padding-left: 1.5rem;
     }
 
-    /* Active State - White background with black text */
+     Active State - White background with black text 
     #sidebar-wrapper .list-group-item.active {
         background-color: #ffffff !important;
         color: #000000 !important;
@@ -163,7 +172,7 @@ a {
             color: #1b6ec2;
         }
 
-/*Sidebar Collapsed State*/
+Sidebar Collapsed State
 #sidebar-wrapper.collapsed {
     margin-left: -260px;
 }
@@ -173,14 +182,14 @@ a {
         margin-left: -260px;
     }
 
-        /* When collapsed, expand content to full width */
+         When collapsed, expand content to full width 
         #sidebar-wrapper.collapsed ~ #page-content-wrapper {
             margin-left: 0;
             width: 100%;
         }
 }
 
-/* Authentication Pages*/
+ Authentication Pages
 .auth-container {
     min-height: calc(100vh - 200px);
     display: flex;
@@ -201,7 +210,7 @@ a {
     background: #ffffff;
 }
 
-/* Forms */
+ Forms 
 .form-control {
     border-radius: 8px;
     padding: 0.625rem 1rem;
@@ -214,7 +223,7 @@ a {
         box-shadow: 0 0 0 0.2rem rgba(27, 110, 194, 0.25);
     }
 
-/*Cards*/
+Cards
 .card {
     border: none;
     border-radius: 10px;
@@ -227,7 +236,7 @@ a {
         transform: translateY(-2px);
     }
 
-/*Borders & Shadows*/
+Borders & Shadows
 .border-top {
     border-top: 1px solid #e5e5e5 !important;
 }
@@ -244,7 +253,7 @@ a {
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
 }
 
-/* Footer*/
+ Footer
 footer {
     background: #ffffff;
     border-top: 1px solid #e9ecef;
@@ -255,7 +264,7 @@ footer {
         font-size: 0.9rem;
     }
 
-/*Toast Notifications*/
+Toast Notifications
 .toast-container {
     z-index: 1100;
 }
@@ -265,7 +274,7 @@ footer {
     animation: fadeIn 0.3s ease;
 }
 
-/*Dashboard Menu Toggle*/
+Dashboard Menu Toggle
 #menu-toggle {
     cursor: pointer;
     transition: all 0.3s ease;
@@ -279,12 +288,12 @@ footer {
         box-shadow: none;
     }
 
-/*Utilities*/
+Utilities
 .text-decoration-none {
     text-decoration: none !important;
 }
 
-/* Responsive Design */
+ Responsive Design 
 @media (max-width: 992px) {
     #sidebar-wrapper {
         position: fixed;
@@ -334,7 +343,7 @@ footer {
     }
 }
 
-/* Accessibility*/
+ Accessibility
 a:focus-visible,
 button:focus-visible,
 .form-control:focus-visible,
@@ -343,7 +352,7 @@ button:focus-visible,
     outline-offset: 2px;
 }
 
-/* Print Styles */
+ Print Styles 
 @media print {
     #sidebar-wrapper,
     nav,
@@ -362,7 +371,7 @@ button:focus-visible,
     }
 }
 
-/* Animations*/
+ Animations
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -374,3 +383,5 @@ button:focus-visible,
         transform: translateY(0);
     }
 }
+
+
