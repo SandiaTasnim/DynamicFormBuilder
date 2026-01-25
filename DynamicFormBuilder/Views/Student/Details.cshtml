@@ -1,0 +1,44 @@
+﻿@using DynamicFormBuilder.ViewModels
+@model StudentViewModel
+@{
+    ViewData["Title"] = "Student Details";
+}
+<div class="container my-5">
+    <!-- Page Title -->
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">Student Details</h1>
+        <p class="text-muted">All the relevant information about this student</p>
+    </div>
+    <!-- Card -->
+    <div class="card shadow-lg border-0 rounded-4 p-4">
+        <!-- Customer Name -->
+        <div class="text-center mb-4">
+            <h2 class="fw-bold">@Model.StudentName</h2>
+        </div>
+        <!-- Customer Info -->
+        <div class="row g-4">
+            <div class="col-md-6">
+                <h6 class="text-muted">Student ID</h6>
+                <p class="fw-semibold">@Model.StudentId</p>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-muted">Phone</h6>
+                <p>@Model.PhoneNumber</p>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-muted">Email</h6>
+                <p>@Model.Email</p>
+            </div>
+            
+            <div class="col-md-6">
+                <h6 class="text-muted">Department</h6>
+                <p>@Model.Department</p>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-muted">Address</h6>
+                <p>@Model.Address</p>
+            </div>
+           
+            
+        </div>
+      

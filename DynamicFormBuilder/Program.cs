@@ -108,6 +108,10 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.RegisterApplicationServices();
 builder.Services.AddScoped<FormRepository>();
+//builder.Services.AddHttpClient<IWeatherService, WeatherService>();
+builder.Services.AddHttpClient<IWeatherService, WeatherService>();
+
+
 
 var app = builder.Build();
 
@@ -125,6 +129,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Account}/{action=Login}/{id?}");
+    pattern: "{controller=Student}/{action=Index}/{id?}");
 
 app.Run();

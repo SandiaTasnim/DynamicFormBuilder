@@ -2,7 +2,7 @@
 
 namespace DynamicFormBuilder.Models
 {
-    public class LoginViewModel
+    public class LoginModel
     {
         [Required]
         [EmailAddress]

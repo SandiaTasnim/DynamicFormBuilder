@@ -7,6 +7,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Content Remove="Views\Weather\WeatherDisplay.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Include="Views\Weather\WeatherDisplay.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="ClosedXML" Version="0.105.0" />
 		<PackageReference Include="CsvHelper" Version="33.1.0" />
 		<PackageReference Include="EPPlus" Version="4.5.2.1" />

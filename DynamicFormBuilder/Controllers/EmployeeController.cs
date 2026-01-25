@@ -793,6 +793,53 @@ namespace DynamicFormBuilder.Controllers
         }
         #endregion
 
+        public IActionResult EmployeeStatusUploadTemplate()
+        {
+            var fileName = "Employee_Status_Upload_Template.xlsx";
+
+            using (var workbook = new XLWorkbook())
+            {
+                var ws = workbook.Worksheets.Add("Template");
+
+                // Header styling
+                ws.Row(1).Style.Font.Bold = true;
+                ws.Row(1).Style.Fill.BackgroundColor = XLColor.FromArgb(200, 200, 198);
+                ws.Row(1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                ws.Row(1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+                // Headers (MUST MATCH upload code)
+                ws.Cell(1, 1).Value = "Employee ID";
+                ws.Cell(1, 2).Value = "Status";
+
+                // Example rows
+                ws.Cell(2, 1).Value = "EMP001";
+                ws.Cell(2, 2).Value = "Active";
+
+                ws.Cell(3, 1).Value = "EMP002";
+                ws.Cell(3, 2).Value = "Inactive";
+
+                // Add dropdown validation for Status
+                var statusRange = ws.Range("B2:B1000");
+                statusRange.SetDataValidation()
+                           .List("Active,Inactive", true);
+
+                // Adjust columns
+                ws.Columns().AdjustToContents();
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    var content = stream.ToArray();
+                    return File(
+                        content,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        fileName
+                    );
+                }
+            }
+        }
+
+
 
 
         #endregion

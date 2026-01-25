@@ -1,0 +1,64 @@
+﻿@model Student
+
+@{
+    ViewData["Title"] = "Create Student";
+}
+
+<h2>Create Student</h2>
+
+@using (Html.BeginForm("Create", "Student", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    @* Hidden ID (optional, will be generated on server if needed) *@
+
+    <div class="form-group mb-3">
+        <label asp-for="StudentName"></label>
+        @Html.TextBoxFor(m => m.StudentName, new { @class = "form-control", placeholder = "Enter full name" })
+        @Html.ValidationMessageFor(m => m.StudentName, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Age"></label>
+        @Html.TextBoxFor(m => m.Age, new { @class = "form-control", placeholder = "Enter student Age" })
+        @Html.ValidationMessageFor(m => m.Age, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Email"></label>
+        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Enter email" })
+        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Department"></label>
+        @Html.TextBoxFor(m => m.Department, new { @class = "form-control", placeholder = "Enter Department" })
+        @Html.ValidationMessageFor(m => m.Department, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="PhoneNumber"></label>
+        @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-control", placeholder = "Enter PhoneNumber" })
+        @Html.ValidationMessageFor(m => m.PhoneNumber, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Address"></label>
+        @Html.TextBoxFor(m => m.Address, new { @class = "form-control", placeholder = "Enter Address" })
+        @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
+    </div>
+
+    
+
+
+
+
+
+<button type="submit" class="btn btn-primary">Create</button>
+<a href="@Url.Action("Index", "Student")" class="btn btn-secondary">Cancel</a>
+}
+
+@section Scripts {
+    @Html.Partial("_ValidationScriptsPartial")
+}
+

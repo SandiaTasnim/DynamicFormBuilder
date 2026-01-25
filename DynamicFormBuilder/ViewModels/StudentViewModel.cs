@@ -1,15 +1,11 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace DynamicFormBuilder.Models
+namespace DynamicFormBuilder.ViewModels
 {
-    [Table("Student")]
-    public class Student
+    public class StudentViewModel
     {
-        
+        [Required]
          [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int StudentId { get; set; }
 
         [Required(ErrorMessage = "Student name is required")]

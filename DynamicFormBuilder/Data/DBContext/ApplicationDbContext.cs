@@ -12,12 +12,13 @@ public class ApplicationDbContext
     {
     }
 
-    public DbSet<StudentModel> EmployeeModels { get; set; }  // <- this is required
+    //public DbSet<Student> EmployeeModels { get; set; }  // <- this is required
     public DbSet<Customer> Customers { get; set; }  // <- this is required
     public DbSet<Division> Divisions { get; set; }
     public DbSet<District> Districts { get; set; }
 
     public DbSet<EmployeeModel> Employees { get; set; }
+    public DbSet<Student> Students { get; set; }
     public DbSet<EmployeeChangeHistoriesModel> EmployeeChangeHistories { get; set; }
 
 }

@@ -15,7 +15,43 @@
 }
 
 
-<h2 class="mb-3">Employee List</h2>
+@* <h2 class="mb-3">Employee List</h2> *@
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Employee List</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Employees</li>
+            </ol>
+        </nav>
+    </div>
+
+</div>
+
+@* //search *@
+
+<div class="mb-3">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text"
+                       id="searchInput"
+                       class="form-control"
+                       placeholder="Search by ID, Name, Email, or Designation...">
+                <button class="btn btn-secondary" type="button" onclick="clearSearch()">
+                    <i class="bi bi-x-circle"></i> Clear
+                </button>
+            </div>
+            <small class="text-muted">
+                <span id="searchResults"></span>
+            </small>
+        </div>
+    </div>
+</div>
 
 <div class="mb-3 d-flex gap-2">
     <a asp-action="Create" class="btn btn-primary">
@@ -39,6 +75,13 @@
         
         Download Excel
     </a>
+
+    <a asp-action="EmployeeStatusUploadTemplate"
+       asp-controller="Employee"
+       class="btn btn-success">
+        ⬇ Download Template
+    </a>
+
 </div>
 
 <table class="table table-bordered table-striped">
@@ -58,12 +101,12 @@
         {
             foreach (var item in Model)
             {
-                <tr>
-                    <td>@item.EmployeeId</td>
-                    <td>@item.FullName</td>
-                    <td>@item.Email</td>
+                <tr class="employee-row">
+                    <td class="employee-id">@item.EmployeeId</td>
+                    <td class="employee-name">@item.FullName</td>
+                    <td class="employee-email">@item.Email</td>
                     <td>@item.DOB?.ToString("yyyy-MM-dd")</td>
-                    <td>@item.Designation</td>
+                    <td class="employee-designation">@item.Designation</td>
                     <td>
                         <span class="badge @(item.IsActive == true ? "bg-success" : "bg-danger")">
                             @(item.IsActive == true ? "Active" : "InActive")
@@ -122,6 +165,11 @@
         }
     </tbody>
 </table>
+
+<div id="noResults" class="alert alert-warning text-center" style="display: none;">
+    <i class="bi bi-exclamation-triangle"></i> No employees match your search criteria.
+</div>
+
 
 <!-- Pagination Controls -->
 @if (Model.PageCount > 1)
@@ -206,6 +254,65 @@
 
 @section Scripts {
     <script>
+
+        $(document).ready(function() {
+            // Real-time search as user types
+            $('#searchInput').on('keyup', function() {
+                performSearch();
+            });
+        });
+
+        function performSearch() {
+            var searchText = $('#searchInput').val().toLowerCase().trim();
+
+            // If search is empty, show all rows
+            if (searchText === '') {
+                $('.employee-row').show();
+                $('#noResults').hide();
+                $('#searchResults').html('');
+                return;
+            }
+
+            var visibleCount = 0;
+            var totalCount = $('.employee-row').length;
+
+            // Loop through each employee row
+            $('.employee-row').each(function() {
+                var row = $(this);
+
+                // Get text from searchable columns
+                var employeeId = row.find('.employee-id').text().toLowerCase();
+                var name = row.find('.employee-name').text().toLowerCase();
+                var email = row.find('.employee-email').text().toLowerCase();
+                var designation = row.find('.employee-designation').text().toLowerCase();
+
+                // Combine all searchable fields
+                var rowText = employeeId + ' ' + name + ' ' + email + ' ' + designation;
+
+                // Check if search text is found in any field
+                if (rowText.includes(searchText)) {
+                    row.show();
+                    visibleCount++;
+                } else {
+                    row.hide();
+                }
+            });
+
+            // Update results counter
+            if (visibleCount === 0) {
+                $('#noResults').show();
+                $('#searchResults').html('<span class="text-danger">No results found</span>');
+            } else {
+                $('#noResults').hide();
+                $('#searchResults').html('Showing <strong>' + visibleCount + '</strong> of <strong>' + totalCount + '</strong> employees');
+            }
+        }
+
+        function clearSearch() {
+            $('#searchInput').val('');
+            performSearch();
+        }
+
         function loadEmployeeHistory(employeeId) {
 
             // Show modal

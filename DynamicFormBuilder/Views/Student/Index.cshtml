@@ -1,63 +1,525 @@
-﻿@model IEnumerable<DynamicFormBuilder.Models.StudentModel>
+﻿@using DynamicFormBuilder.ViewModels
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<DynamicFormBuilder.ViewModels.StudentViewModel>
 
 @{
     ViewData["Title"] = "Students List";
+    int pageSize = ViewBag.PageSize != null ? (int)ViewBag.PageSize : (Model?.PageSize ?? 10);
+    int pageNumber = Model?.PageNumber ?? (ViewBag.CurrentPage != null ? (int)ViewBag.CurrentPage : 1);
+
+    int count = ((pageNumber - 1) * pageSize) + 1;
 }
 
-<div class="container mt-4">
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <h2>Students</h2>
+
+<style>
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .table > :not(caption) > * > * {
+        padding: 1rem 0.5rem;
+    }
+
+    .card {
+        overflow: hidden;
+    }
+
+    .btn-outline-primary {
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+        .btn-outline-primary:hover {
+            background-color: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+    .page-item.active .page-link {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+
+    .breadcrumb-item.active {
+        color: #6c757d;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "/";
+    }
+</style>
+
+<div class="container-fluid px-4 py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Students List</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Students</li>
+                </ol>
+            </nav>
         </div>
-        <div class="col-md-6 text-end">
-            <a href="@Url.Action("Create", "Student")" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Add New Student
-            </a>
-        </div>
+        <a asp-action="Create" class="btn btn-outline-primary">
+            <i class="bi bi-plus-circle"></i> Add Students
+        </a>
     </div>
 
-    <div class="card">
-        <div class="card-body">
-            <table class="table table-striped table-bordered" id="studentsTable">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Age</th>
-                        <th>Phone</th>
-                        <th>Email</th>
-                        <th>Department</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var student in Model)
-                    {
+    <!-- Students Table Card -->
+    <div class="card shadow-sm border-0 rounded-3">
+        <!-- Card Header -->
+        <div class="card-header bg-white border-bottom py-3">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h5 class="mb-0 fw-semibold">Students Information</h5>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex gap-2 justify-content-md-end">
+                        <!-- Search Box -->
+                        @* <div class="input-group" style="max-width: 300px;">
+                            <input type="text" id="searchInput" class="form-control" placeholder="Search by name or roll">
+                            <span class="input-group-text bg-white">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+                        </div> *@
+
+                        
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-search"></i>
+                                        </span>
+                                        <input type="text"
+                                               id="searchInput"
+                                               class="form-control"
+                                               placeholder="Search by ID, Name, Email, or Department...">
+                                        <button class="btn btn-secondary" type="button" onclick="clearSearch()">
+                                            <i class="bi bi-x-circle"></i> Clear
+                                        </button>
+                                    </div>
+                                    <small class="text-muted">
+                                        <span id="searchResults"></span>
+                                    </small>
+                                
+                            
+
+                        <!-- Date Filter -->
+                        @* <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-calendar3"></i> Last 30 days
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Last 7 days</a></li>
+                                <li><a class="dropdown-item" href="#">Last 30 days</a></li>
+                                <li><a class="dropdown-item" href="#">Last 90 days</a></li>
+                            </ul>
+                        </div> *@
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Body - Table -->
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="studentsTable">
+                    <thead class="bg-light">
                         <tr>
-                            <td>@student.StudentName</td>
-                            <td>@student.Age</td>
-                            <td>@student.PhoneNumber</td>
-                            <td>@student.Email</td>
-                            <td>@student.Department</td>
-                            <td>
-                                <a href="@Url.Action("Details", "Student", new { id = student.StudentId })" class="btn btn-sm btn-info me-1">
-                                    <i class="bi bi-eye"></i> Details
-                                </a>
-                                <a href="@Url.Action("Edit", "Student", new { id = student.StudentId })" class="btn btn-sm btn-warning">
-                                    <i class="bi bi-pencil"></i> Edit
-                                </a>
-                            </td>
+                            <th class="px-3 py-3">
+                                @* <input type="checkbox" id="selectAll" class="form-check-input"> *@
+                            </th>
+                            <th class="px-2 py-1">SL</th>
+                            <th class="px-4 py-3">Student Name</th>
+                            <th class="px-4 py-3">ID</th>
+                            <th class="px-4 py-3">Email</th>
+                            <th class="px-4 py-3">Department</th>
+                            <th class="px-4 py-3">Age</th>
+                            <th class="px-4 py-3">Phone</th>
+                            <th class="px-4 py-3">Address</th>
+                            <th class="px-4 py-3 text-center">Action</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var student in Model)
+                            {
+                                <tr class="student-row">
+                                    <td class="px-0">
+                                        @* <input type="checkbox" class="form-check-input student-checkbox"> *@
+                                    </td>
+                                    <td class="px-2 text-muted">@(count++)</td>
+                                    <td class="px-sm-0 student-name">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar-circle">
+                                                @student.StudentName.Substring(0, 1).ToUpper()
+                                            </div>
+                                            <span class="fw-medium">@student.StudentName</span>
+                                        </div>
+                                    </td>
+                                    
+                                    <td class="px-4 text-muted student-id">#@student.StudentId.ToString("D3")</td>
+                                    <td class="px-4 text-muted student-email">@student.Email</td>
+                                    <td class="px-4 text-muted student-department">@student.Department</td>
+                                    <td class="px-4 text-muted">@student.Age</td>
+                                    <td class="px-4 text-muted">@student.PhoneNumber</td>
+                                    <td class="px-4 text-muted">@student.Address</td>
+                                    <td class="px-4">
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-info"
+                                                    onclick="loadStudentHistory(@student.StudentId)">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-primary"
+                                                    @* class="btn btn-sm btn-outline-info" *@
+                                                    title="Edit"
+                                                    onclick="openEditModal(@student.StudentId)">
+                                                <i class="bi bi-pen"></i>
+                                            </button>
+
+                                            @* <a asp-action="Edit" asp-route-id="@student.StudentId"
+                                               class="btn btn-sm btn-outline-primary" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a> *@
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                    title="Delete"
+                                                    onclick="confirmDelete(@student.StudentId, '@student.StudentName')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                        <p class="mb-0">No students found</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div id="noResults" class="alert alert-warning text-center" style="display: none;">
+                    <i class="bi bi-exclamation-triangle"></i> No employees match your search criteria.
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Footer - Pagination -->
+        @* @if (Model != null && Model.Any())
+        {
+            <div class="card-footer bg-white border-top py-3">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <nav aria-label="Table navigation">
+                            <ul class="pagination mb-0">
+                                <li class="page-item">
+                                    <a class="page-link" href="#" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item"><a class="page-link" href="#">4</a></li>
+                                <li class="page-item"><a class="page-link" href="#">5</a></li>
+                                <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+                                <li class="page-item"><a class="page-link" href="#">100</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <div class="d-inline-flex align-items-center gap-2">
+                            <span class="text-muted">10 / page</span>
+                            <select class="form-select form-select-sm" style="width: auto;">
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        } *@
+    </div>
+</div>
+
+<!-- Pagination Controls -->
+@if (Model.PageCount > 1)
+{
+    <div class="mx-2 my-2">
+        @Html.PaginationFor(
+        Model,
+        page => Url.Action("Index", new
+        {
+            page,
+            pageSize = Model.PageSize
+        })
+        )
+</div>
+}
+
+<div class="modal fade" id="editStudentModal" tabindex="-1" aria-labelledby="editStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editStudentModalLabel">Edit Student</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="editModalBody">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- ADD THIS MODAL STRUCTURE -->
+<div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="historyModalLabel"> Student Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="historyModalBody">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    Are you sure you want to delete student <strong id="studentNameToDelete"></strong>?
+                </div>
+                <p class="text-muted small mb-0">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 @section Scripts {
     <script>
-        $(document).ready(function () {
-            $('#studentsTable').DataTable(); // Initialize DataTables if you want search/paging
+        $(document).ready(function() {
+            // Real-time search as user types
+            $('#searchInput').on('keyup', function() {
+                performSearch();
+            });
+        });
+
+        function performSearch() {
+            var searchText = $('#searchInput').val().toLowerCase().trim();
+
+            // If search is empty, show all rows
+            if (searchText === '') {
+                $('.student-row').show();
+                $('#noResults').hide();
+                $('#searchResults').html('');
+                return;
+            }
+
+            var visibleCount = 0;
+            var totalCount = $('.student-row').length;
+
+            // Loop through each employee row
+            $('.student-row').each(function() {
+                var row = $(this);
+
+                // Get text from searchable columns
+                var employeeId = row.find('.student-id').text().toLowerCase();
+                var name = row.find('.student-name').text().toLowerCase();
+                var email = row.find('.student-email').text().toLowerCase();
+                var designation = row.find('.student-department').text().toLowerCase();
+
+                // Combine all searchable fields
+                var rowText = employeeId + ' ' + name + ' ' + email + ' ' + designation;
+
+                // Check if search text is found in any field
+                if (rowText.includes(searchText)) {
+                    row.show();
+                    visibleCount++;
+                } else {
+                    row.hide();
+                }
+            });
+
+            // Update results counter
+            if (visibleCount === 0) {
+                $('#noResults').show();
+                $('#searchResults').html('<span class="text-danger">No results found</span>');
+            } else {
+                $('#noResults').hide();
+                $('#searchResults').html('Showing <strong>' + visibleCount + '</strong> of <strong>' + totalCount + '</strong> students');
+            }
+        }
+
+        function clearSearch() {
+            $('#searchInput').val('');
+            performSearch();
+        }
+
+            function openEditModal(id) {
+            // Show modal
+            var modal = new bootstrap.Modal(document.getElementById('editStudentModal'));
+            modal.show();
+
+            // Show spinner
+            $('#editModalBody').html(`
+                <div class="text-center py-5">
+                    <div class="spinner-border" role="status"></div>
+                    <div class="mt-2">Loading...</div>
+                </div>
+            `);
+
+            // AJAX call
+            $.ajax({
+                url: '@Url.Action("Edit", "Student")/' + id,
+                type: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                success: function (result) {
+                    setTimeout(() => {
+                        $('#editModalBody').html(result);
+                    }, 500);
+                },
+                error: function (xhr, status, error) {
+                    $('#editModalBody').html(`
+                        <div class="alert alert-danger">
+                            <h4>Error</h4>
+                            <p>Failed to load employee data. Please try again.</p>
+                            <small>${error}</small>
+                        </div>
+                    `);
+                }
+            });
+        }
+        function loadStudentHistory(studentId) {
+
+            var modal = new bootstrap.Modal(document.getElementById('historyModal'));
+            modal.show();
+
+            $('#historyModalBody').html(`
+                <div class="text-center py-5">
+                    <div class="spinner-border"></div>
+                    <div class="mt-2">Loading...</div>
+                </div>
+            `);
+
+            $.ajax({
+                url: '@Url.Action("Details", "Student")',
+                type: 'GET',
+                data: { id: studentId },   // ✅ FIXED
+                success: function (result) {
+                    $('#historyModalBody').html(result);
+                },
+                error: function () {
+                    $('#historyModalBody').html(`
+                        <div class="alert alert-danger">
+                            Failed to load student details
+                        </div>
+                    `);
+                }
+            });
+        }
+
+                function confirmDelete(studentId, studentName) {
+            // Update the student name in the modal
+            $('#studentNameToDelete').text(studentName);
+
+            // Update the form action with the correct student ID
+            $('#deleteForm').attr('action', '@Url.Action("DeleteConfirmed", "Student")/' + studentId);
+
+            // Show the modal
+            var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+
+        // ✅ ADD FORM SUBMIT HANDLER
+        $(document).ready(function() {
+            $('#deleteForm').submit(function(e) {
+                e.preventDefault();
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    success: function(result) {
+                        if (result.success) {
+                            // Close modal
+                            var modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+                            modal.hide();
+
+                            // Show success message
+                            alert(result.message);
+
+                            // Reload page to show updated data
+                            location.reload();
+                        } else {
+                            alert(result.message || 'Error deleting student');
+                        }
+                    },
+                    error: function() {
+                        alert('Error deleting student');
+                    }
+                });
+            });
         });
     </script>
+
 }

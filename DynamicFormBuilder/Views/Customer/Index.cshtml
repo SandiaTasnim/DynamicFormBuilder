@@ -8,7 +8,19 @@
 }
 
 
-<h2>Customers List</h2>
+@* <h2>Customers List</h2> *@
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Customer List</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Customers</li>
+            </ol>
+        </nav>
+    </div>
+
+</div>
 <button class="btn btn-primary mb-3" 
         onclick="window.location='@Url.Action("Create", "Customer")'">
     Add New Customer
@@ -35,7 +47,7 @@
   
 
     <!-- Buttons -->
-    <div class="col-md-5">
+    <div class="col-md-6">
         <button type="submit" class="btn btn-primary">Search</button>
         <a asp-action="Index" class="btn btn-secondary">Reset</a>
         <a asp-action="Excel_Download"
@@ -46,6 +58,11 @@
             Download Excel
         </a>
         <a asp-action="UploadExcel" class="btn btn-dark">Upload Excel</a>
+        <a asp-action="CustomerStatusUploadTemplate"
+           asp-controller="Customer"
+           class="btn btn-success">
+            ⬇ Download Template
+        </a>
 
         </div>
         

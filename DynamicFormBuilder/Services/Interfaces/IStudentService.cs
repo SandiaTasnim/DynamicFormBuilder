@@ -1,14 +1,20 @@
 ﻿using DynamicFormBuilder.Models;
+using DynamicFormBuilder.ViewModels;
 
 namespace DynamicFormBuilder.Services.Interfaces
 {
     public interface IStudentService
     {
-        List<StudentModel> GetAllStudents();
-        void AddStudent(StudentModel model);
+        List<StudentViewModel> GetAllStudents();
+        StudentViewModel GetStudentDetailsById(int id);
+        void AddStudent(Student student);
 
-        StudentModel GetStudentById (int id);
+        Student GetStudentById (int id);
         //void RemoveStudent(StudentModel model);
+        bool IsStudentIdExist(int studentId);
 
+        void StudentDelete(int id);
+        Student Update(Student student);
+       
     }
 }

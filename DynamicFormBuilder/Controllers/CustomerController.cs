@@ -324,7 +324,7 @@ public class CustomerController : Controller
             for (int row = 2; row <= sheet.Dimension.Rows; row++)
             {
                 string nameFromExcel = sheet.Cells[row, 1].GetValue<string>()?.Trim();
-                string professionFromExcel = sheet.Cells[row, 2].GetValue<string>()?.Trim();
+                string phoneFromExcel = 0 + sheet.Cells[row, 2].GetValue<string>()?.Trim();
 
                 if (string.IsNullOrWhiteSpace(nameFromExcel))
                     continue;
@@ -343,7 +343,7 @@ public class CustomerController : Controller
                     var dbCustomer = _customerService.GetCustomerById(customer.CustomerID);
                     if (dbCustomer != null)
                     {
-                        dbCustomer.Profession = professionFromExcel;
+                        dbCustomer.Phone= phoneFromExcel;
                         _customerService.GetUpdateCustomer(dbCustomer);
                         updated++;
                     }
@@ -362,6 +362,56 @@ public class CustomerController : Controller
         }
 
         return RedirectToAction("Index");
+    }
+
+    public IActionResult CustomerStatusUploadTemplate()
+    {
+        var fileName = "Customer_Status_Upload_Template.xlsx";
+
+        using (var workbook = new XLWorkbook())
+        {
+            var ws = workbook.Worksheets.Add("Template");
+
+            // Header styling
+            ws.Row(1).Style.Font.Bold = true;
+            ws.Row(1).Style.Fill.BackgroundColor = XLColor.FromArgb(200, 200, 198);
+            ws.Row(1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            ws.Row(1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+            // Headers (MUST MATCH upload code)
+            ws.Cell(1, 1).Value = "Name";
+            ws.Cell(1, 2).Value = "Phone";
+
+            ws.Column(2).Style.NumberFormat.Format = "@";
+
+
+            // Example rows
+            ws.Cell(2, 1).Value = "Sara";
+            ws.Cell(2, 2).Value = "01627363728";
+
+            ws.Cell(3, 1).Value = "Maria";
+            ws.Cell(3, 2).Value = "01726537282";
+
+            // Add dropdown validation for Status
+            var phoneRange = ws.Range("B2:B1000");
+            phoneRange.SetDataValidation()
+                 .WholeNumber
+                 .Between("10000000000", "99999999999");
+
+            // Adjust columns
+            ws.Columns().AdjustToContents();
+
+            using (var stream = new MemoryStream())
+            {
+                workbook.SaveAs(stream);
+                var content = stream.ToArray();
+                return File(
+                    content,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    fileName
+                );
+            }
+        }
     }
 
     [HttpPost("Edit")]
@@ -675,6 +725,10 @@ public class CustomerController : Controller
     //}
 
 }
+
+
+
+
 
 
 

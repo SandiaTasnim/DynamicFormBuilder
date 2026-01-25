@@ -1,0 +1,149 @@
+﻿<!-- ==================== Views/Weather/WeatherDisplay.cshtml ==================== -->
+@model DynamicFormBuilder.Models.WeatherViewModel
+
+@{
+    ViewData["Title"] = $"Weather - {Model.City}";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Search Another City
+            </a>
+        </div>
+    </div>
+
+    <!-- Current Weather -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-lg">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="fas fa-thermometer-half"></i> Current Weather</h4>
+                </div>
+                <div class="card-body">
+                    @if (Model.CurrentWeather != null)
+                    {
+                        <div class="row align-items-center">
+                            <div class="col-md-4 text-center">
+                                <img src="https:@Model.CurrentWeather.Current.Condition.Icon"
+                                     alt="Weather Icon"
+                                     class="img-fluid"
+                                     style="width: 100px;">
+                                <h5 class="mt-2">@Model.CurrentWeather.Current.Condition.Text</h5>
+                            </div>
+                            <div class="col-md-8">
+                                <h2 class="display-4">@Model.CurrentWeather.Current.Temp_c°C / @Model.CurrentWeather.Current.Temp_f°F</h2>
+                                <h5>@Model.CurrentWeather.Location.Name, @Model.CurrentWeather.Location.Region, @Model.CurrentWeather.Location.Country</h5>
+                                <p class="text-muted">@Model.CurrentWeather.Location.Localtime</p>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <p><strong>Feels Like:</strong> @Model.CurrentWeather.Current.Feelslike_c°C / @Model.CurrentWeather.Current.Feelslike_f°F</p>
+                                        <p><strong>Humidity:</strong> @Model.CurrentWeather.Current.Humidity%</p>
+                                    </div>
+                                    <div class="col-6">
+                                        <p><strong>Wind Speed:</strong> @Model.CurrentWeather.Current.Wind_kph km/h</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7-Day Forecast -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-lg">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fas fa-calendar-week"></i> 7-Day Forecast</h4>
+                </div>
+                <div class="card-body">
+                    @if (Model.ForecastWeather?.Forecast?.Forecastday != null)
+                    {
+                        <div class="row">
+                            @foreach (var day in Model.ForecastWeather.Forecast.Forecastday)
+                            {
+                                <div class="col-md-3 col-sm-6 mb-3">
+                                    <div class="card h-100 text-center">
+                                        <div class="card-body">
+                                            <h6 class="card-title">@DateTime.Parse(day.Date).ToString("MMM dd")</h6>
+                                            <img src="https:@day.Day.Condition.Icon"
+                                                 alt="Weather Icon"
+                                                 class="img-fluid mb-2"
+                                                 style="width: 60px;">
+                                            <p class="mb-1"><small>@day.Day.Condition.Text</small></p>
+                                            <h5 class="text-danger">↑ @day.Day.Maxtemp_c°C</h5>
+                                            <h5 class="text-primary">↓ @day.Day.Mintemp_c°C</h5>
+                                            <p class="mb-0"><small>Rain: @day.Day.Daily_chance_of_rain%</small></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historical Weather (Last 7 Days) -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-lg">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="fas fa-history"></i> Historical Weather (7 Days Ago)</h4>
+                </div>
+                <div class="card-body">
+                    @if (Model.HistoricalWeather?.Forecast?.Forecastday != null && Model.HistoricalWeather.Forecast.Forecastday.Any())
+                    {
+                        var histDay = Model.HistoricalWeather.Forecast.Forecastday.First();
+                        <div class="row align-items-center">
+                            <div class="col-md-4 text-center">
+                                <img src="https:@histDay.Day.Condition.Icon"
+                                     alt="Weather Icon"
+                                     class="img-fluid"
+                                     style="width: 80px;">
+                                <h6 class="mt-2">@histDay.Day.Condition.Text</h6>
+                            </div>
+                            <div class="col-md-8">
+                                <h4>@DateTime.Parse(histDay.Date).ToString("MMMM dd, yyyy")</h4>
+                                <div class="row mt-3">
+                                    <div class="col-6">
+                                        <p><strong>Max Temp:</strong> @histDay.Day.Maxtemp_c°C / @histDay.Day.Maxtemp_f°F</p>
+                                        <p><strong>Min Temp:</strong> @histDay.Day.Mintemp_c°C / @histDay.Day.Mintemp_f°F</p>
+                                    </div>
+                                    <div class="col-6">
+                                        <p><strong>Avg Temp:</strong> @histDay.Day.Avgtemp_c°C / @histDay.Day.Avgtemp_f°F</p>
+                                        <p><strong>Rain Chance:</strong> @histDay.Day.Daily_chance_of_rain%</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+    .card {
+        border-radius: 10px;
+        transition: transform 0.3s;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+    .display-4 {
+        font-weight: bold;
+    }
+</style>
